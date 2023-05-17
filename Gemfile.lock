@@ -69,6 +69,8 @@ GEM
     bootsnap (1.16.0)
       msgpack (~> 1.2)
     builder (3.2.4)
+    composite_primary_keys (14.0.6)
+      activerecord (~> 7.0.2)
     concurrent-ruby (1.2.2)
     crass (1.0.6)
     date (3.3.3)
@@ -158,6 +160,7 @@ PLATFORMS
 
 DEPENDENCIES
   bootsnap
+  composite_primary_keys
   debug
   puma (~> 5.0)
   rails (~> 7.0.4, >= 7.0.4.3)
