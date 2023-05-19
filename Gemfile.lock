@@ -110,6 +110,7 @@ GEM
     nio4r (2.5.9)
     nokogiri (1.15.0-x86_64-darwin)
       racc (~> 1.4)
+    pg (1.4.6)
     puma (5.6.5)
       nio4r (~> 2.0)
     racc (1.6.2)
@@ -162,6 +163,7 @@ DEPENDENCIES
   bootsnap
   composite_primary_keys
   debug
+  pg (~> 1.1)
   puma (~> 5.0)
   rails (~> 7.0.4, >= 7.0.4.3)
   sqlite3 (~> 1.4)
