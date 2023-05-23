@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_19_163341) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_23_152840) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "timescaledb"
@@ -41,6 +41,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_19_163341) do
     t.bigint "workflow_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["event_time"], name: "classification_user_groups_event_time_idx", order: :desc
   end
 
   create_table "comment_events", primary_key: ["comment_id", "event_time"], force: :cascade do |t|
