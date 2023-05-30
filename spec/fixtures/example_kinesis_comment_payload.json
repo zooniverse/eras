@@ -1,0 +1,25 @@
+{
+    "payload": [
+        {
+            "source": "talk",
+            "type": "comment",
+            "version": "1.0.0",
+            "timestamp": "2023-04-20T16:26:00Z",
+            "data": {
+                "id": 1820,
+                "board_id": 230,
+                "discussion_id": 353,
+                "focus_id": 81433,
+                "focus_type": "Subject",
+                "project_id": 1874,
+                "section": "project-1874",
+                "body": "test test kinesis test",
+                "user_id": "1326056",
+                "user_ip": "12.157.174.6",
+                "created_at": "2023-04-20T16:25:59.719Z",
+                "url": "https://pfe-preview.zooniverse.org/projects/markb-panoptes/some-completed-workflows/talk/230/353?comment=1820"
+            },
+            "linked": {}
+        }
+    ]
+}
