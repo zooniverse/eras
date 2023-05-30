@@ -2,6 +2,7 @@
 
 module Kinesis
   class Create < ActiveInteraction::Base
+    # 3 hour session time limit (10,800 seconds), capping at 30 mins (1800 seconds)
     SESSION_LIMIT = 10_800
     SESSION_CAP = 1800
 
@@ -33,13 +34,10 @@ module Kinesis
       return unless source == 'panoptes' && type == 'classification'
 
       classification_events << classification_event(event_data)
-      classification_user_groups << classification_user_groups(event_data) if user_group_ids?(event_data)
+      add_classification_user_groups(event_data, classification_user_groups) if user_group_ids?(event_data)
     end
 
-    def user_group_ids?(event_data)
-      event_data.fetch('links').fetch('user').present? &&
-        event_data.fetch('metadata').fetch('user_group_ids').present?
-    end
+    private
 
     def comment_event(data)
       {
@@ -61,13 +59,14 @@ module Kinesis
         project_id: data.fetch('links').fetch('project'),
         workflow_id: data.fetch('links').fetch('workflow'),
         user_id: data.fetch('links').fetch('user'),
-        user_group_ids: user_group_ids(data),
+        user_group_ids: data.fetch('metadata').fetch('user_group_ids'),
         session_time: session_time(data)
       }
     end
 
-    def user_group_ids(data)
-      data.fetch('metadata').fetch('user_group_ids')
+    def user_group_ids?(event_data)
+      event_data.fetch('links').fetch('user').present? &&
+        event_data.fetch('metadata').fetch('user_group_ids').present?
     end
 
     def started_at(data)
@@ -101,13 +100,11 @@ module Kinesis
       }
     end
 
-    def classification_user_groups(data)
-      user_group_ids = user_group_ids(data)
-      classification_user_groups_from_data = []
+    def add_classification_user_groups(data, classification_user_groups)
+      user_group_ids = data.fetch('metadata').fetch('user_group_ids')
       user_group_ids.each do |user_group_id|
-        classification_user_groups_from_data << classification_user_group(data, user_group_id)
+        classification_user_groups << classification_user_group(data, user_group_id)
       end
-      classification_user_groups_from_data
     end
   end
 end
