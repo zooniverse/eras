@@ -32,7 +32,10 @@ gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 # gem "bcrypt", "~> 3.1.7"
 
 group :development, :test do
+  gem 'database_cleaner'
   gem 'debug', platforms: %i[mri mingw x64_mingw]
+  gem 'factory_bot_rails'
+  gem 'pry-byebug'
   gem 'rspec-rails'
 end
 

@@ -36,7 +36,8 @@
                     "live_project": true,
                     "user_language": "en",
                     "user_group_ids": [
-                        1234
+                        1234,
+                        4321
                     ],
                     "selected_user_group_id": "1234",
                     "subject_dimensions": [

@@ -23,6 +23,7 @@ module Kinesis
         ClassificationEvent.upsert_all(classification_events,
                                        unique_by: %i[classification_id event_time])
       end
+      # no primary key to upsert by, so we do an insert
       ClassificationUserGroup.insert_all(classification_user_groups.flatten) unless classification_user_groups.empty?
     end
 
@@ -44,8 +45,8 @@ module Kinesis
         comment_id: data.fetch('id'),
         event_time: data.fetch('created_at'),
         comment_updated_at: data&.fetch('updated_at', nil),
-        project_id: data.fetch('project_id'),
-        user_id: data.fetch('user_id')
+        project_id: data.fetch('project_id').to_i,
+        user_id: data.fetch('user_id').to_i
       }
     end
 
