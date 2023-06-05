@@ -22,7 +22,7 @@ RSpec.describe Kinesis::Create do
   context 'payload has classification' do
     let(:payload) { JSON.parse(File.read(Rails.root.join('spec/fixtures/example_kinesis_classification_payload.json'))) }
     let(:operation) { described_class.with_options(payload) }
-
+    
     it 'creates classification_event' do
       expect { operation.run! }.to change(ClassificationEvent, :count).from(0).to(1)
       classification_event =  ClassificationEvent.first
@@ -47,23 +47,50 @@ RSpec.describe Kinesis::Create do
       classification_event = ClassificationEvent.first
       payload_data = payload['payload'][0]['data']
       payload_metadata = payload_data['metadata']
-      started_at = DateTime.parse(payload_metadata['started_at'])
-      finished_at = DateTime.parse(payload_metadata['finished_at'])
+      started_at = Time.parse(payload_metadata['started_at'])
+      finished_at = Time.parse(payload_metadata['finished_at'])
       expect(classification_event.started_at).to eq(started_at)
       expect(classification_event.finished_at).to eq(finished_at)
     end
 
     it 'sets started_at time to nil if there is no started_at in metadata' do
+      payload_data = payload['payload'][0]['data']
+      payload_metadata = payload_data['metadata']
+      payload_metadata.delete('started_at')
+      operation.run!
+      classification_event = ClassificationEvent.first
+      expect(classification_event.started_at).to eq(nil)
     end
 
     it 'sets finished_at to nil if there is no finished_at in metadata' do
+      payload_data = payload['payload'][0]['data']
+      payload_metadata = payload_data['metadata']
+      payload_metadata.delete('finished_at')
+      operation.run!
+      classification_event = ClassificationEvent.first
+      expect(classification_event.finished_at).to eq(nil)
     end
 
     context 'session_time calculation' do
       it 'sets session time to finished_at - started_at if within session limit' do
+        operation.run!
+        classification_event = ClassificationEvent.first
+        payload_data = payload['payload'][0]['data']
+        payload_metadata = payload_data['metadata']
+        started_at = Time.parse(payload_metadata['started_at'])
+        finished_at = Time.parse(payload_metadata['finished_at'])
+        expect(classification_event.session_time).to eq(finished_at - started_at)
       end
 
       it 'caps session time if finished_at - started_at is over session limit' do
+        payload_data = payload['payload'][0]['data']
+        payload_metadata = payload_data['metadata']
+        started_at = Time.parse(payload_metadata['started_at'])
+        finished_at = started_at + Kinesis::Create::SESSION_LIMIT + 1
+        payload_metadata['finished_at'] = finished_at.strftime('%Y-%m-%dT%H:%M:%S%z')
+        operation.run!
+        classification_event = ClassificationEvent.first
+        expect(classification_event.session_time).to eq(Kinesis::Create::SESSION_CAP)
       end
 
       it 'sets session time to 0 if finished_at - started_at is negative' do

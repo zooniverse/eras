@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_23_152840) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_05_192518) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "timescaledb"
@@ -25,7 +25,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_23_152840) do
     t.bigint "workflow_id"
     t.bigint "user_id"
     t.bigint "user_group_ids", default: [], array: true
-    t.float "session_time"
+    t.decimal "session_time", precision: 15, scale: 10
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["event_time"], name: "classification_events_event_time_idx", order: :desc
@@ -35,7 +35,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_23_152840) do
     t.bigint "classification_id"
     t.datetime "event_time", precision: nil, null: false
     t.bigint "user_group_id"
-    t.float "session_time"
+    t.decimal "session_time", precision: 15, scale: 10
     t.bigint "project_id"
     t.bigint "user_id"
     t.bigint "workflow_id"

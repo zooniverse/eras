@@ -18,6 +18,7 @@ module Kinesis
         process stream_event, comment_events, classification_events, classification_user_groups
       end
 
+      # TO DO (possibly?): We may want to consider doing these upserts/inserts in batches to improve performance.
       CommentEvent.upsert_all(comment_events, unique_by: %i[comment_id event_time]) unless comment_events.empty?
       unless classification_events.empty?
         ClassificationEvent.upsert_all(classification_events,
@@ -72,19 +73,19 @@ module Kinesis
 
     def started_at(data)
       started_at = data.fetch('metadata')&.fetch('started_at', nil)
-      DateTime.parse(started_at) if started_at
+      Time.parse(started_at) if started_at
     end
 
     def finished_at(data)
       finished_at = data.fetch('metadata')&.fetch('finished_at', nil)
-      DateTime.parse(finished_at) if finished_at
+      Time.parse(finished_at) if finished_at
     end
 
     def session_time(data)
       started_at = started_at(data)
       finished_at = finished_at(data)
-      diff = finished_at.to_i - started_at.to_i if finished_at && started_at
-      diff = 0 if diff.negative? || diff.nil?
+      diff = finished_at - started_at if finished_at && started_at
+      diff = 0 if diff.nil? || diff.negative?
       diff = SESSION_CAP if diff > SESSION_LIMIT
       diff.to_f
     end
