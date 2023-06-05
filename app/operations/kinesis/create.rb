@@ -45,8 +45,8 @@ module Kinesis
         comment_id: data.fetch('id'),
         event_time: data.fetch('created_at'),
         comment_updated_at: data&.fetch('updated_at', nil),
-        project_id: data.fetch('project_id').to_i,
-        user_id: data.fetch('user_id').to_i
+        project_id: data.fetch('project_id'),
+        user_id: data.fetch('user_id')
       }
     end
 
@@ -84,7 +84,7 @@ module Kinesis
       started_at = started_at(data)
       finished_at = finished_at(data)
       diff = finished_at.to_i - started_at.to_i if finished_at && started_at
-      diff = 0 if diff.negative?
+      diff = 0 if diff.negative? || diff.nil?
       diff = SESSION_CAP if diff > SESSION_LIMIT
       diff.to_f
     end
