@@ -60,8 +60,8 @@ module Kinesis
         finished_at: finished_at(data),
         project_id: data.fetch('links').fetch('project'),
         workflow_id: data.fetch('links').fetch('workflow'),
-        user_id: data.fetch('links').fetch('user'),
-        user_group_ids: data.fetch('metadata').fetch('user_group_ids'),
+        user_id: data.fetch('links')&.fetch('user', nil),
+        user_group_ids: data.fetch('metadata')&.fetch('user_group_ids', []),
         session_time: session_time(data)
       }
     end
@@ -98,7 +98,7 @@ module Kinesis
         session_time: session_time(data),
         project_id: data.fetch('links').fetch('project'),
         workflow_id: data.fetch('links').fetch('workflow'),
-        user_id: data.fetch('links').fetch('user')
+        user_id: data.fetch('links')&.fetch('user', nil)
       }
     end
 

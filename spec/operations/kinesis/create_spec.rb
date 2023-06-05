@@ -117,12 +117,47 @@ RSpec.describe Kinesis::Create do
       end
     end
 
-    context 'classification made by user who belong to multiple user groups' do
-      it 'creates classification_user_group' do
+    context 'classifying user belongs multiple user groups' do
+      it 'creates classification_user_groups for every user_group user belongs to' do
+        expect { operation.run! }.to change(ClassificationUserGroup, :count).from(0).to(2)
+        payload_data = payload['data']
+        payload_metadata = payload_data['metadata']
+        classification_user_groups = ClassificationUserGroup.all
+        classification_user_groups.each do |cug|
+          expect(cug.classification_id).to eq(payload_data['id'].to_i)
+          expect(cug.user_group_id.in?(payload_metadata['user_group_ids'])).to be true
+        end
+      end
+
+      it 'sets classification_event user_group_ids from metadata' do
+        operation.run!
+        payload_data = payload['data']
+        payload_metadata = payload_data['metadata']
+        classification_event = ClassificationEvent.first
+        expect(classification_event.user_group_ids).to eq(payload_metadata['user_group_ids'])
       end
     end
 
     context 'non-logged in user classification' do
+      before(:each) do
+        payload_data = payload['data']
+        payload_links = payload_data['links']
+        payload_metadata = payload_data['metadata']
+        payload_links['user'] = nil
+        payload_metadata.delete('selected_user_group_id')
+        payload_metadata['user_group_ids'] = []
+        operation.run!
+      end
+
+      it 'does not create classification_user_group' do
+        expect(ClassificationUserGroup.count).to eq(0)
+      end
+
+      it 'creates classification_event without user_id and empty groups' do
+        classification_event = ClassificationEvent.first
+        expect(classification_event.user_id).to be_nil
+        expect(classification_event.user_group_ids).to be_empty
+      end
     end
   end
 end
