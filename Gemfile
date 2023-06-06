@@ -1,8 +1,6 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.2.2"
-
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
 gem 'composite_primary_keys'
