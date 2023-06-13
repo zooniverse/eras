@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 env:
-  DATABASE_URL_TEST: postgresql://postgres:postgres@localhost/eras_test
+  DATABASE_URL_TEST: postgresql://eras:eras@localhost/eras_test
   RAILS_ENV: test
 
 jobs:
