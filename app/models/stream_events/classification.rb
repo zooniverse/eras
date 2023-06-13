@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module StreamEvents
   class Classification
     def initialize(event)

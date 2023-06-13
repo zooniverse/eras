@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class KinesisStream
   def initialize
     @comment_events = []
