@@ -35,3 +35,4 @@
 .byebug_history
 .DS_Store
 .env
+coverage
