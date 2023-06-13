@@ -1,0 +1,46 @@
+name: Run Rspec
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  DATABASE_URL_TEST: postgresql://postgres:postgres@localhost/eras_test
+  RAILS_ENV: test
+
+jobs:
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: timescale/timescaledb:2.11.0-pg15
+        env:
+          POSTGRES_PASSWORD: eras
+          POSTGRES_USER: eras
+        ports:
+        - 5432:5432
+        options:
+          --health-cmd pg_isready
+          --health-interval 10ms
+          --health-timeout 500ms
+          --health-retries 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3.5.2
+
+      - name: Check for focused specs
+        run: ./scripts/no_focus.sh
+
+      - name: Setup Ruby and install gems
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.2'
+          bundler-cache: true
+
+      - name: Setup test database
+        run: bin/rails db:create
+
+      - name: Run tests
+        run: bundle exec rspec
