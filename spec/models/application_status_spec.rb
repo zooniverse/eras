@@ -7,6 +7,6 @@ RSpec.describe ApplicationStatus do
 
   it 'returns the commit_id' do
     Rails.application.commit_id = 'test_commit_id-123'
-    expect(status.as_json).to eq({ revision: 'test_commit_id-123' })
+    expect(status.as_json).to eq(revision: 'test_commit_id-123')
   end
 end
