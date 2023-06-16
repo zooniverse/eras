@@ -1,0 +1,30 @@
+version: '3'
+services:
+  postgres:
+    image: timescale/timescaledb:2.11.0-pg15
+    environment:
+      - "POSTGRES_USER=eras"
+      - "POSTGRES_PASSWORD=eras"
+    ports:
+      - "5432:5432"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        RAILS_ENV: development
+    volumes:
+      - ./:/app
+      - gem_cache:/usr/local/bundle
+    ports:
+      - "3000:3000"
+    environment:
+      - "RAILS_ENV=development"
+      - "DATABASE_URL=postgresql://eras:eras@postgres/eras_development"
+      - "DATABASE_URL_TEST=postgresql://eras:eras@postgres/eras_test"
+    links:
+      - postgres:postgres
+
+volumes:
+  gem_cache:
