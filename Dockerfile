@@ -17,5 +17,4 @@ ADD ./ /app
 
 RUN (cd /app && mkdir -p tmp/pids)
 
-#CMD ["/app/docker/start-puma.sh"]
 CMD [ "bundle","exec", "puma", "config.ru"]
