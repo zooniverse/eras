@@ -15,6 +15,7 @@ RUN if [ "$RAILS_ENV" = "development" ]; then bundle install; else bundle instal
 
 ADD ./ /app
 
+RUN (cd /app && git log --format="%H" -n 1 > commit_id.txt)
 RUN (cd /app && mkdir -p tmp/pids)
 
-CMD [ "bundle","exec", "puma", "config.ru"]
+CMD [ "bundle", "exec", "puma", "config.ru"]
