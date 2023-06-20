@@ -10,6 +10,7 @@ gem 'composite_primary_keys'
 gem 'pg', '~> 1.1'
 # Use the Puma web server [https://github.com/puma/puma]
 gem 'puma', '~> 5.0'
+gem 'pundit'
 gem 'rails', '~> 7.0.4', '>= 7.0.4.3'
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 gem 'rack-cors'
@@ -34,6 +35,7 @@ group :development, :test do
   gem 'factory_bot_rails'
   gem 'pry-byebug'
   gem 'rspec-rails'
+  gem 'rubocop'
   gem 'simplecov', require: false
 end
 
