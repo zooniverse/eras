@@ -1,0 +1,39 @@
+name: Deploy to Staging
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build_and_push_image:
+    name: Build and Push Image
+    uses: zooniverse/ci-cd/.github/workflows/build_and_push_image.yaml@main
+    with:
+      repo_name: eras
+      commit_id: ${{ github.sha }}
+      latest: true
+
+  db_migration_staging:
+    name: Staging DB Migration
+    uses: zooniverse/ci-cd/.github/workflows/db_migration.yaml@main
+    needs: build_and_push_image
+    with:
+      app_name: eras
+      environment: staging
+      commit_id: ${{ github.sha }}
+    secrets:
+      creds: ${{ secrets.AZURE_AKS }}
+
+  deploy_staging:
+    name: Deploy to Staging
+    uses: zooniverse/ci-cd/.github/workflows/deploy_app.yaml@main
+    needs: [build_and_push_image, db_migration_staging]
+    with:
+      app_name: eras
+      repo_name: eras
+      commit_id: ${{ github.sha }}
+      environment: staging
+    secrets:
+      creds: ${{ secrets.AZURE_AKS }}

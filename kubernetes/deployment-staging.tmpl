@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eras-staging-app
+  labels:
+    app: eras-staging-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eras-staging-app
+  template:
+    metadata:
+      labels:
+        app: eras-staging-app
+    spec:
+      containers:
+        - name: eras-staging-app
+          image: ghcr.io/zooniverse/eras:__IMAGE_TAG__
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "10m"
+            limits:
+              memory: "600Mi"
+              cpu: "500m"
+          env:
+            - name: RAILS_LOG_TO_STDOUT
+              value: "true"
+            - name: RAILS_ENV
+              value: staging
+            - name: RAILS_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: eras-staging
+                  key: rails-master-key
+          volumeMounts:
+          - mountPath: /tmp
+            name: eras-staging-app-data
+      volumes:
+        - name: eras-staging-app-data
+          hostPath:
+            # directory location on host node temp disk
+            path: /mnt/eras-staging-app-data
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eras-staging-app
+spec:
+  selector:
+    app: eras-staging-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort
