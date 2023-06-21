@@ -21,7 +21,6 @@ services:
       - "3000:3000"
     environment:
       - "RAILS_ENV=development"
-      - "DATABASE_URL=postgresql://eras:eras@postgres/eras_development"
       - "DATABASE_URL_TEST=postgresql://eras:eras@postgres/eras_test"
     links:
       - postgres:postgres
