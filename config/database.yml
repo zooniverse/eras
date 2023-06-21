@@ -9,6 +9,9 @@ default: &default
 development:
   <<: *default
 
+staging:
+  <<: *default
+
 test:
   <<: *default
   url: <%= ENV.fetch('DATABASE_URL_TEST', 'postgresql://eras:eras@localhost/eras_test') %>
