@@ -4,13 +4,13 @@ default: &default
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  url: <%= Rails.application.credentials.db_url %>
 
 development:
   <<: *default
 
 staging:
   <<: *default
+  url: <%= Rails.application.credentials.db_url %>
 
 test:
   <<: *default
@@ -18,3 +18,4 @@ test:
 
 production:
   <<: *default
+  url: <%= Rails.application.credentials.db_url %>
