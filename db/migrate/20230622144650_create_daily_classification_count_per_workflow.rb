@@ -8,11 +8,11 @@ class CreateDailyClassificationCountPerWorkflow < ActiveRecord::Migration[7.0]
         timescaledb.continuous
       ) as
       select
-        time_bucket('1d', event_time) as period,
+        time_bucket('1d', event_time) as day,
         workflow_id,
         count(*) as classification_count
       from classification_events
-      group by period, workflow_id;
+      group by day, workflow_id;
     SQL
   end
 end

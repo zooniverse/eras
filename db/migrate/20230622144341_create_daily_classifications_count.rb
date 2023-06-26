@@ -9,10 +9,10 @@ class CreateDailyClassificationsCount < ActiveRecord::Migration[7.0]
         timescaledb.continuous
       ) as
       select
-        time_bucket('1d', event_time) as period,
+        time_bucket('1d', event_time) as day,
         count(*) as classification_count
       from classification_events
-      group by period;
+      group by day;
     SQL
   end
 end
