@@ -39,3 +39,5 @@ Style/HashTransformKeys:
   Enabled: true
 Style/HashTransformValues:
   Enabled: true
+Style/HashSyntax:
+  EnforcedShorthandSyntax: either
