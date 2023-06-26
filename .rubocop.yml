@@ -31,6 +31,8 @@ Lint/RaiseException:
   Enabled: true
 Lint/StructNewOverride:
   Enabled: true
+Style/HashSyntax:
+  EnforcedShorthandSyntax: either
 Style/ExponentialNotation:
   Enabled: true
 Style/HashEachMethods:
@@ -39,5 +41,3 @@ Style/HashTransformKeys:
   Enabled: true
 Style/HashTransformValues:
   Enabled: true
-Style/HashSyntax:
-  EnforcedShorthandSyntax: either
