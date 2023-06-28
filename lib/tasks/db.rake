@@ -50,5 +50,5 @@ namespace :db do
   end
 
   desc 'Setup development database'
-  task 'setup:development': %w[db:create db:migrate]
+  task 'setup:development': %w[db:create db:schema:load db:create_classifications_hypertable db:create_continuous_aggregate_views]
 end

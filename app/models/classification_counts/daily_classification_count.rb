@@ -10,5 +10,10 @@ module ClassificationCounts
     def readonly?
       true
     end
+      today = Date.today
+      yesterday = today - 1
+      sql = "CALL refresh_continuous_aggregate('daily_classification_count', '#{yesterday}', '#{today}')"
+      ActiveRecord::Base.connection.execute(sql)
+    end
   end
 end
