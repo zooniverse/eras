@@ -11,7 +11,7 @@ namespace :db do
   desc 'Create Continuous Aggregates Views'
   task create_continuous_aggregate_views: :environment do
     ActiveRecord::Base.connection.execute <<-SQL
-      CREATE MATERIALIZED VIEW daily_classification_count
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_classification_count
       WITH (timescaledb.continuous) AS
       SELECT time_bucket('1 day', event_time) AS day,
             count(*) as classification_count
@@ -20,7 +20,7 @@ namespace :db do
     SQL
 
     ActiveRecord::Base.connection.execute <<-SQL
-      CREATE MATERIALIZED VIEW daily_classification_count_per_workflow
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_classification_count_per_workflow
       WITH (timescaledb.continuous) AS
       SELECT time_bucket('1 day', event_time) AS day,
       workflow_id,
@@ -30,7 +30,7 @@ namespace :db do
     SQL
 
     ActiveRecord::Base.connection.execute <<-SQL
-      CREATE MATERIALIZED VIEW daily_classification_count_per_project
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_classification_count_per_project
       WITH (timescaledb.continuous) AS
       SELECT time_bucket('1 day', event_time) AS day,
       project_id,
