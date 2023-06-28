@@ -42,6 +42,5 @@ jobs:
       - name: Setup test database
         run: bin/rails db:create
 
-
       - name: Run tests
         run: bundle exec rspec
