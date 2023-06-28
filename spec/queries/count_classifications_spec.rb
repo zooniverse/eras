@@ -36,28 +36,7 @@ RSpec.describe CountClassifications do
     end
   end
 
-  describe 'filters' do
-    it 'filters_by_workflow_id if workflow_id given' do
-      params[:workflow_id] = '2'
-      counts = count_classifications.call(params)
-      expect(counts.to_sql).to include("WHERE \"daily_classification_count_per_workflow\".\"workflow_id\" = #{params[:workflow_id]}")
-    end
-
-    it 'does not filter by workflow_id if no workflow_id given' do
-      counts = count_classifications.call(params)
-      expect(counts.to_sql).not_to include("WHERE \"daily_classification_count_per_workflow\".\"workflow_id\" = #{params[:workflow_id]}")
-    end
-
-    it 'filters_by_project_id if project_id given' do
-      params[:project_id] = '2'
-      counts = count_classifications.call(params)
-      expect(counts.to_sql).to include("WHERE \"daily_classification_count_per_project\".\"project_id\" = #{params[:project_id]}")
-    end
-
-    it 'filters with date range if start or end date given' do
-      params[:start_date] = Date.today.to_s
-      counts = count_classifications.call(params)
-      expect(counts.to_sql).to include("day > '#{params[:start_date]}'")
-    end
+  describe '#call' do
+    it_behaves_like 'is filterable'
   end
 end
