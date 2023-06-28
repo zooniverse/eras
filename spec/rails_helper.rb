@@ -13,6 +13,9 @@ require 'rspec/rails'
 
 Dir[Rails.root.join('spec', 'support', '**', '*.rb')].each { |f| require f }
 
+# load rake tasks for use in test db schema setup
+Eras::Application.load_tasks
+
 # Checks for pending migrations and applies them before tests are run.
 # If you are not using ActiveRecord, you can remove these lines.
 begin
@@ -47,4 +50,13 @@ RSpec.configure do |config|
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:
   # config.filter_gems_from_backtrace("gem name")
+
+  # For some reason, TimeScale hypertables and materialized views do not persist in test environment.
+  # Therefore, before we run a test suite, we need to ensure that we have our hypertable and continuous aggregates created.
+  config.before(:suite) do
+    Rake::Task['db:create_classifications_hypertable'].invoke
+    Rake::Task['db:drop_continuous_aggregate_views'].invoke
+    DatabaseCleaner.clean_with(:truncation)
+    Rake::Task['db:create_continuous_aggregate_views'].invoke
+  end
 end
