@@ -17,14 +17,18 @@ class ApplicationController < ActionController::API
   end
 
   def validate_params
-    valid_date_range
+    valid_date_range if params[:start_date] && params[:end_date]
+    validate_period if params[:period]
     raise ValidationError, 'Cannot query by workflow and project. Either query by one or the other' if params[:workflow_id] && params[:project_id]
   end
 
+  def validate_period
+    raise ValidationError, 'Invalid bucket option. Valid options for period is day, week, month, or year' unless CountClassifications::TIME_BUCKET_OPTIONS.keys.include? params[:period].to_sym
+  end
+
   def valid_date_range
-    start_date = Date.parse(params[:start_date]) if params[:start_date]
-    end_date = Date.parse(params[:end_date]) if params[:end_date]
-    return unless start_date && end_date
+    start_date = Date.parse(params[:start_date])
+    end_date = Date.parse(params[:end_date])
     raise ValidationError, 'Date range entered is not valid' if start_date > end_date
   end
 end

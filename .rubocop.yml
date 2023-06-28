@@ -2,7 +2,7 @@ AllCops:
   NewCops: enable
 
 Layout/LineLength:
-  Max: 160
+  Max: 200
 Layout/SpaceAroundEqualsInParameterDefault:
   EnforcedStyle: 'no_space'
 
