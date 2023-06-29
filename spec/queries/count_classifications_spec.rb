@@ -37,11 +37,12 @@ RSpec.describe CountClassifications do
   end
 
   describe '#call' do
-    it_behaves_like 'is filterable'
     let!(:classification_event) { create(:classification_event) }
     let!(:diff_workflow_event) { create(:event_with_diff_workflow) }
     let!(:diff_project_event) { create(:event_with_diff_project) }
     let!(:diff_time_event) { create(:event_created_yesterday) }
+
+    it_behaves_like 'is filterable'
 
     it 'returns counts of all events when no params given' do
       counts = count_classifications.call(params)
