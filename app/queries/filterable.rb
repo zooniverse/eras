@@ -22,6 +22,13 @@ module Filterable
     scoped.where(range_clause)
   end
 
+  def filter_by_user_id(scoped, user_id)
+    return scoped unless user_id.present?
+
+    user_ids = user_id.split(',')
+    scoped.where(user_id: user_ids)
+  end
+
   private
 
   def range_clause(start_date, end_date)

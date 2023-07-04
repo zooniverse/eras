@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CountClassifications
+class CountComments
   include Filterable
   include Selectable
   attr_reader :counts
@@ -11,24 +11,24 @@ class CountClassifications
 
   def call(params={})
     scoped = counts
-    scoped = filter_by_workflow_id(scoped, params[:workflow_id])
     scoped = filter_by_project_id(scoped, params[:project_id])
+    scoped = filter_by_user_id(scoped, params[:user_id])
     filter_by_date_range(scoped, params[:start_date], params[:end_date])
   end
 
   private
 
   def initial_scope(relation, period)
-    relation.select(select_by(period, 'classification')).group('period').order('period')
+    relation.select(select_by(period, 'comment')).group('period').order('period')
   end
 
   def relation(params)
-    if params[:workflow_id]
-      ClassificationCounts::DailyWorkflowClassificationCount
-    elsif params[:project_id]
-      ClassificationCounts::DailyProjectClassificationCount
+    if params[:project_id] || (params[:project_id] && params[:user_id])
+      CommentCounts::DailyProjectUserCommentCount
+    elsif params[:user_id]
+      CommentCounts::DailyUserCommentCount
     else
-      ClassificationCounts::DailyClassificationCount
+      CommentCounts::DailyCommentCount
     end
   end
 end

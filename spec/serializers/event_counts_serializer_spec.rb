@@ -2,15 +2,15 @@
 
 require 'rails_helper'
 
-RSpec.describe ClassificationCountsSerializer do
-  let(:classification_count) { build(:daily_classification_count) }
-  let(:count_serializer) { described_class.new([classification_count]) }
+RSpec.describe EventCountsSerializer do
+  let(:event_count) { build(:daily_classification_count) }
+  let(:count_serializer) { described_class.new([event_count]) }
 
   it 'returns total_count when period not given' do
     serialized = count_serializer.as_json(serializer_options: {})
     expect(serialized).to have_key(:total_count)
     expect(serialized).not_to have_key(:data)
-    expect(serialized[:total_count]).to eq(classification_count.count)
+    expect(serialized[:total_count]).to eq(event_count.count)
   end
 
   it 'returns total_count and data when period is given' do
@@ -22,7 +22,7 @@ RSpec.describe ClassificationCountsSerializer do
 
   it 'sums up total_count correctly' do
     classification_count2 = build(:daily_classification_count)
-    classification_counts = [classification_count, classification_count2]
+    classification_counts = [event_count, classification_count2]
     serializer = described_class.new(classification_counts)
     serialized = serializer.as_json(serializer_options: {})
     expect(serialized[:total_count]).to eq(classification_counts.sum(&:count))

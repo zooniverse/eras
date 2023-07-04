@@ -5,7 +5,7 @@ class ClassificationCountController < ApplicationController
   def query
     skip_authorization
     classification_counts = CountClassifications.new(classification_count_params).call(classification_count_params)
-    render json: ClassificationCountsSerializer.new(classification_counts), serializer_options: serializer_opts_from_params
+    render json: EventCountsSerializer.new(classification_counts), serializer_options: serializer_opts_from_params
   end
 
   private

@@ -1,21 +1,21 @@
 # frozen_string_literal: true
 
-class ClassificationCountsSerializer
-  attr_reader :classification_counts
+class EventCountsSerializer
+  attr_reader :event_counts
 
   def initialize(counts_scope)
-    @classification_counts = counts_scope
+    @event_counts = counts_scope
   end
 
   def as_json(options)
     serializer_options = options[:serializer_options]
     period = serializer_options[:period]
-    total_count = classification_counts.sum(&:count).to_i
+    total_count = event_counts.sum(&:count).to_i
 
     if period
       {
         total_count:,
-        data: classification_counts
+        data: event_counts
       }
     else
       { total_count: }
