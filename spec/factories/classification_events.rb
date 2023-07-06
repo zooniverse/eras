@@ -13,17 +13,17 @@ FactoryBot.define do
     user_group_ids { [] }
     session_time { 10 }
 
-    factory :event_created_yesterday do
+    factory :classification_created_yesterday do
       event_time { Date.today - 1 }
       classification_id { 3 }
     end
 
-    factory :event_with_diff_workflow do
+    factory :classification_with_diff_workflow do
       workflow_id { 3 }
       classification_id { 4 }
     end
 
-    factory :event_with_diff_project do
+    factory :classification_with_diff_project do
       project_id { 2 }
       classification_id { 5 }
     end
