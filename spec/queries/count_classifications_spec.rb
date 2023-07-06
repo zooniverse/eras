@@ -42,7 +42,10 @@ RSpec.describe CountClassifications do
     let!(:diff_project_event) { create(:event_with_diff_project) }
     let!(:diff_time_event) { create(:event_created_yesterday) }
 
-    it_behaves_like 'is filterable'
+    it_behaves_like 'is filterable by workflow'
+    it_behaves_like 'is filterable by project'
+    it_behaves_like 'is filterable by date range'
+
 
     it 'returns counts of all events when no params given' do
       counts = count_classifications.call(params)
