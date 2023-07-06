@@ -51,6 +51,23 @@ RSpec.describe CountComments do
     it_behaves_like 'is filterable by project'
     it_behaves_like 'is filterable by date range'
 
+    it 'filters by user_id if user_id given' do
+      params[:user_id] = '3'
+      counts = count_comments.call(params)
+      expect(counts.to_sql).to include(".\"user_id\" = #{params[:user_id]}")
+    end
+
+    it 'filters by user_ids if multiple user_ids given' do
+      params[:user_id] = '3,4'
+      counts = count_comments.call(params)
+      expect(counts.to_sql.downcase).to include('."user_id" in (3, 4)')
+    end
+
+    it 'does not filter by user_id if user_id not given' do
+      counts = count_comments.call(params)
+      expect(counts.to_sql.downcase).not_to include('."user_id" = ')
+    end
+
     it 'returns counts of all events when no params given' do
       counts = count_comments.call(params)
       # because default is bucket by year and all data created in the same year, we expect counts to look something like
