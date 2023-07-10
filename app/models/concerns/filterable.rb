@@ -26,9 +26,9 @@ module Filterable
 
   def range_clause(start_date, end_date)
     range_clause = ''
-    range_clause += "day > '#{start_date}'" if start_date
+    range_clause += "day >= '#{start_date}'" if start_date
     range_clause += ' and ' if start_date && end_date
-    range_clause += "day < '#{end_date}'" if end_date
+    range_clause += "day <= '#{end_date}'" if end_date
     range_clause
   end
 end

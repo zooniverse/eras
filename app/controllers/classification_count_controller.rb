@@ -2,6 +2,7 @@
 
 class ClassificationCountController < ApplicationController
   before_action :validate_params
+
   def query
     skip_authorization
     classification_counts = CountClassifications.new(classification_count_params).call(classification_count_params)

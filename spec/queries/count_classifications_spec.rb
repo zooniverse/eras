@@ -82,9 +82,9 @@ RSpec.describe CountClassifications do
 
     it 'returns counts of events within given date range' do
       last_week = Date.today - 7
-      today = Date.today
+      yesterday = Date.today - 1
       params[:start_date] = last_week.to_s
-      params[:end_date] = today.to_s
+      params[:end_date] = yesterday.to_s
       counts = count_classifications.call(params)
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(1)
