@@ -54,20 +54,20 @@ RSpec.shared_examples 'is filterable by date range' do
     params[:start_date] = (Date.today - 1).to_s
     params[:end_date] = Date.today.to_s
     counts = counts_query.call(params)
-    expect(counts.to_sql.downcase).to include("day > '#{params[:start_date]}' and day < '#{params[:end_date]}'")
+    expect(counts.to_sql.downcase).to include("day >= '#{params[:start_date]}' and day <= '#{params[:end_date]}'")
   end
 
   it 'filters only by start_date if no end_date' do
     params[:start_date] = (Date.today - 1).to_s
     counts = counts_query.call(params)
-    expect(counts.to_sql.downcase).to include("day > '#{params[:start_date]}'")
-    expect(counts.to_sql.downcase).not_to include('and day < ')
+    expect(counts.to_sql.downcase).to include("day >= '#{params[:start_date]}'")
+    expect(counts.to_sql.downcase).not_to include('and day <= ')
   end
 
   it 'filters only by end_date if no start_date' do
     params[:end_date] = Date.today.to_s
     counts = counts_query.call(params)
-    expect(counts.to_sql.downcase).to include("day < '#{params[:end_date]}'")
-    expect(counts.to_sql.downcase).not_to include('day > ')
+    expect(counts.to_sql.downcase).to include("day <= '#{params[:end_date]}'")
+    expect(counts.to_sql.downcase).not_to include('day >= ')
   end
 end
