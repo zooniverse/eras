@@ -2,7 +2,7 @@
 
 class CommentCountController < ApplicationController
   before_action :validate_params
-  
+
   def query
     skip_authorization
     comment_counts = CountComments.new(comment_count_params).call(comment_count_params)
