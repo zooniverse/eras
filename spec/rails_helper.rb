@@ -57,6 +57,7 @@ RSpec.configure do |config|
   # Therefore, before we run a test suite, we need to ensure that we have our hypertable and continuous aggregates created.
   config.before(:suite) do
     Rake::Task['db:create_classifications_hypertable'].invoke
+    Rake::Task['db:create_comments_hypertable'].invoke
     Rake::Task['db:drop_continuous_aggregate_views'].invoke
     DatabaseCleaner.clean_with(:truncation)
     Rake::Task['db:create_continuous_aggregate_views'].invoke

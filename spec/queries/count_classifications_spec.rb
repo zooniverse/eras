@@ -21,7 +21,7 @@ RSpec.describe CountClassifications do
     end
   end
 
-  describe 'select_clause' do
+  describe 'select_by' do
     it 'buckets counts by year by default' do
       counts = count_classifications.call(params)
       expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count FROM \"daily_classification_count\" GROUP BY period ORDER BY period"
@@ -38,11 +38,14 @@ RSpec.describe CountClassifications do
 
   describe '#call' do
     let!(:classification_event) { create(:classification_event) }
-    let!(:diff_workflow_event) { create(:event_with_diff_workflow) }
-    let!(:diff_project_event) { create(:event_with_diff_project) }
-    let!(:diff_time_event) { create(:event_created_yesterday) }
+    let!(:diff_workflow_event) { create(:classification_with_diff_workflow) }
+    let!(:diff_project_event) { create(:classification_with_diff_project) }
+    let!(:diff_time_event) { create(:classification_created_yesterday) }
 
-    it_behaves_like 'is filterable'
+    it_behaves_like 'is filterable by workflow'
+    it_behaves_like 'is filterable by project'
+    it_behaves_like 'is filterable by date range'
+
 
     it 'returns counts of all events when no params given' do
       counts = count_classifications.call(params)
