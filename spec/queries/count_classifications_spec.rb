@@ -21,7 +21,7 @@ RSpec.describe CountClassifications do
     end
   end
 
-  describe 'select_clause' do
+  describe 'select_by' do
     it 'buckets counts by year by default' do
       counts = count_classifications.call(params)
       expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count FROM \"daily_classification_count\" GROUP BY period ORDER BY period"

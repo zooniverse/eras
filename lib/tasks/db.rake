@@ -67,13 +67,13 @@ namespace :db do
     SQL
 
     ActiveRecord::Base.connection.execute <<-SQL
-    CREATE MATERIALIZED VIEW IF NOT EXISTS daily_comment_count_per_user
-    WITH (timescaledb.continuous) AS
-    SELECT time_bucket('1 day', event_time) AS day,
-          user_id,
-          count(*) as comment_count
-    FROM comment_events
-    GROUP BY day, user_id;
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_comment_count_per_user
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 day', event_time) AS day,
+            user_id,
+            count(*) as comment_count
+      FROM comment_events
+      GROUP BY day, user_id;
     SQL
   end
 

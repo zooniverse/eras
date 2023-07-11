@@ -27,7 +27,7 @@ RSpec.describe CountComments do
     end
   end
 
-  describe 'select_clause' do
+  describe 'select_by' do
     it 'buckets counts by year by default' do
       counts = count_comments.call(params)
       expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(comment_count)::integer AS count FROM \"daily_comment_count\" GROUP BY period ORDER BY period"
