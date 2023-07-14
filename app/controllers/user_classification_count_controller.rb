@@ -2,7 +2,8 @@
 
 class UserClassificationCountController < ApplicationController
   before_action :validate_params
-  # TODO ensure if #top_project_contributions is given that we do not allow querying by both workflow_id and project_id
+  before_action :sanitize_params
+  # TODO: ensure if #top_project_contributions is given that we do not allow querying by both workflow_id and project_id
   # TODO validate top_project_contributions is an integer
 
   def query
@@ -13,14 +14,18 @@ class UserClassificationCountController < ApplicationController
 
   private
 
+  def sanitize_params
+    params[:top_project_contributions] = params[:top_project_contributions].to_i if params[:top_project_contributions]
+    params[:time_spent] = (params[:time_spent].downcase == 'true') if params[:time_spent]
+  end
+
   def serializer_opts_from_params
     { period: params[:period],
       show_time_spent: params[:time_spent],
-      show_top_project_contributions: params[:top_project_contributions]
-    }
+      top_project_contributions: params[:top_project_contributions] }
   end
 
   def user_classification_count_params
-    params.permit(:id, :start_date, :end_date, :period, :workflow_id, :project_id, :time_spent, :top_project_contributions)
+    params.permit(:id, :start_date, :end_date, :period, :workflow_id, :project_id, :top_project_contributions, :time_spent)
   end
 end

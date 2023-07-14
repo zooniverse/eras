@@ -20,13 +20,19 @@ class CountUserClassifications
   private
 
   def initial_scope(relation, params)
+    relation.select(select_clause(params)).group(group_by(params)).order('period')
+  end
+
+  def group_by(params)
+    params[:top_project_contributions] ? 'period, project_id' : 'period'
+  end
+
+  def select_clause(params)
     period = params[:period]
-    select_clause = select_by(period, 'classification')
-    select_clause += ', SUM(total_session_time) AS session_time' if params[:time_spent]
-    select_clause += ', project_id' if params[:top_project_contributions]
-    group_by = 'period'
-    group_by += ', project_id' if params[:top_project_contributions]
-    relation.select(select_clause).group(group_by).order('period')
+    clause = select_by(period, 'classification')
+    clause += ', SUM(total_session_time)::float AS session_time' if params[:time_spent]
+    clause += ', project_id' if params[:top_project_contributions]
+    clause
   end
 
   def relation(params)
