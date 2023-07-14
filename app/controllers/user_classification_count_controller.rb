@@ -3,8 +3,6 @@
 class UserClassificationCountController < ApplicationController
   before_action :validate_params
   before_action :sanitize_params
-  # TODO: ensure if #top_project_contributions is given that we do not allow querying by both workflow_id and project_id
-  # TODO validate top_project_contributions is an integer
 
   def query
     # TODO: policies and scopes should be added
@@ -13,6 +11,11 @@ class UserClassificationCountController < ApplicationController
   end
 
   private
+
+  def validate_params
+    super
+    raise ValidationError, 'Cannot query top projects and query by project/workflow' if params[:top_project_contributions] && (params[:workflow_id] || params[:project_id])
+  end
 
   def sanitize_params
     params[:top_project_contributions] = params[:top_project_contributions].to_i if params[:top_project_contributions]

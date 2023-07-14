@@ -19,6 +19,7 @@ class UserClassificationCountsSerializer
     response[:time_spent] = total_time_spent if show_time_spent
     show_proj_contributions(response, num_top_projects_to_show) if num_top_projects_to_show
     response[:data] = user_classification_counts if period
+    puts "MDY114 USER_CLASSIFICATION COUNTS #{user_classification_counts.group_by { |el| el[:period] }}"
     response
   end
 
@@ -34,13 +35,8 @@ class UserClassificationCountsSerializer
   end
 
   def top_project_contributions(num_top_projects)
-    project_contributions = {}
-    @user_classification_counts.each do |c|
-      if project_contributions[c.project_id]
-        project_contributions[c.project_id] += c.count
-      else
-        project_contributions[c.project_id]  = c.count
-      end
+    project_contributions = @user_classification_counts.group_by(&:project_id).transform_values do |counts|
+      counts.sum(&:count)
     end
     project_contributions.map { |k, v| { project_id: k, count: v } }.sort_by { |p| p[:count] }.reverse.first(num_top_projects)
   end
