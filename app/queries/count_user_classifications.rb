@@ -6,7 +6,7 @@ class CountUserClassifications
   attr_reader :counts
 
   def initialize(params)
-    @counts = initial_scope(relation(params), params[:period])
+    @counts = initial_scope(relation(params), params)
   end
 
   def call(params={})
@@ -19,10 +19,14 @@ class CountUserClassifications
 
   private
 
-  def initial_scope(relation, period)
+  def initial_scope(relation, params)
+    period = params[:period]
     select_clause = select_by(period, 'classification')
     select_clause += ', SUM(total_session_time) AS session_time' if params[:time_spent]
-    relation.select(select_clause).group('period').order('period')
+    select_clause += ', project_id' if params[:top_project_contributions]
+    group_by = 'period'
+    group_by += ', project_id' if params[:top_project_contributions]
+    relation.select(select_clause).group(group_by).order('period')
   end
 
   def relation(params)

@@ -12,11 +12,11 @@ class UserClassificationCountsSerializer
     period = serializer_options[:period]
     show_time_spent = serializer_options[:show_time_spent]
     total_count = user_classification_counts.sum(&:count).to_i
-    total_time_spent = user_classification_counts.sum(&:session_time).to_i
+    total_time_spent = user_classification_counts.sum(&:session_time) if show_time_spent
 
     response = { total_count: }
     response[time_spent] = total_time_spent if show_time_spent
     response[data] = user_classification_counts if period
-
+    response
   end
 end
