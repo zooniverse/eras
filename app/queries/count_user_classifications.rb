@@ -20,10 +20,10 @@ class CountUserClassifications
   private
 
   def initial_scope(relation, params)
-    relation.select(select_clause(params)).group(group_by(params)).order('period')
+    relation.select(select_clause(params)).group(group_by_clause(params)).order('period')
   end
 
-  def group_by(params)
+  def group_by_clause(params)
     params[:top_project_contributions] ? 'period, project_id' : 'period'
   end
 

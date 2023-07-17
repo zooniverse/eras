@@ -9,14 +9,13 @@ class UserClassificationCountsSerializer
 
   def as_json(options)
     serializer_options = options[:serializer_options]
-    period = serializer_options[:period]
     show_time_spent = serializer_options[:show_time_spent]
     num_top_projects_to_show = serializer_options[:top_project_contributions]
     total_count = user_classification_counts.sum(&:count).to_i
     response = { total_count: }
     calculate_time_spent(user_classification_counts, response) if show_time_spent
     show_proj_contributions(response, num_top_projects_to_show) if num_top_projects_to_show
-    response[:data] = response_data(user_classification_counts, num_top_projects_to_show, show_time_spent) if period
+    response[:data] = response_data(user_classification_counts, num_top_projects_to_show, show_time_spent) if serializer_options[:period]
     response
   end
 
@@ -29,16 +28,16 @@ class UserClassificationCountsSerializer
 
   def response_data(user_counts, num_top_projects, show_time_spent)
     data = user_counts
-    # when calculating top projects, our records returned from query will be counts per user per project
+    # when calculating top projects, our records returned from query will be counts (and session time) per user per project bucketed by time
     # eg.  { period: '01-01-2020', count: 38, project_id: 1 }, { period: '01-01-2020', count: 40, project_id: 2}
-    # vs. Our wanted response format which is counts grouped by bucketed time. { period: '01-02-2020', count: 78 }
+    # vs. Our desired response format which is counts (and session time) grouped by bucketed time. { period: '01-02-2020', count: 78 }
     if num_top_projects
-      counts_grouped_by_period = user_counts.group_by { |user_proj_class_count| user_proj_class_count[:period] }.transform_values do |c|
-        val = { count: c.sum(&:count) }
-        val[:session_time] = c.sum(&:session_time) if show_time_spent
-        val
+      counts_grouped_by_period = user_counts.group_by { |user_proj_class_count| user_proj_class_count[:period] }.transform_values do |counts_in_period|
+        total_in_period = { count: counts_in_period.sum(&:count) }
+        total_in_period[:session_time] = counts_in_period.sum(&:session_time) if show_time_spent
+        total_in_period
       end
-      data = counts_grouped_by_period.map { |period, v| { period: }.merge(v) }
+      data = counts_grouped_by_period.map { |period, totals| { period: }.merge(totals) }
     end
     data
   end
