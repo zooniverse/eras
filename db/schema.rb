@@ -44,44 +44,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_12_142126) do
     t.index ["event_time"], name: "classification_user_groups_event_time_idx", order: :desc
   end
 
-  create_table "classification_user_groups_poc", id: false, force: :cascade do |t|
-    t.bigint "classification_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.bigint "user_group_id"
-    t.bigint "project_id"
-    t.bigint "user_id"
-    t.float "session_time"
-    t.index ["created_at"], name: "classification_user_groups_created_at_idx", order: :desc
-  end
-
-  create_table "classifications", primary_key: ["classification_id", "created_at"], force: :cascade do |t|
-    t.bigint "classification_id", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil
-    t.datetime "started_at", precision: nil
-    t.datetime "finished_at", precision: nil
-    t.bigint "project_id"
-    t.bigint "workflow_id"
-    t.bigint "user_id"
-    t.bigint "user_group_ids", default: [], array: true
-    t.float "session_time"
-    t.index ["created_at"], name: "classifications_created_at_idx", order: :desc
-  end
-
-  create_table "classifications_with_dupes", id: false, force: :cascade do |t|
-    t.bigint "id", null: false
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil
-    t.datetime "started_at", precision: nil
-    t.datetime "finished_at", precision: nil
-    t.bigint "project_id"
-    t.bigint "workflow_id"
-    t.bigint "user_id"
-    t.bigint "user_group_id"
-    t.float "session_time"
-    t.index ["created_at"], name: "classifications_with_dupes_created_at_idx", order: :desc
-  end
-
   create_table "comment_events", primary_key: ["comment_id", "event_time"], force: :cascade do |t|
     t.bigint "comment_id", null: false
     t.datetime "event_time", precision: nil, null: false
