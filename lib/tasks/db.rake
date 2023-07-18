@@ -75,6 +75,41 @@ namespace :db do
       FROM comment_events
       GROUP BY day, user_id;
     SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_user_classification_count_and_time_per_workflow
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 day', event_time) AS day,
+            user_id,
+            workflow_id,
+            count(*) as classification_count,
+            sum(session_time) as total_session_time
+      FROM classification_events WHERE user_id IS NOT NULL
+      GROUP BY day, user_id, workflow_id;
+    SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_user_classification_count_and_time_per_project
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 day', event_time) AS day,
+            user_id,
+            project_id,
+            count(*) as classification_count,
+            sum(session_time) as total_session_time
+      FROM classification_events WHERE user_id IS NOT NULL
+      GROUP BY day, user_id, project_id;
+    SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_user_classification_count_and_time
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 day', event_time) AS day,
+            user_id,
+            count(*) as classification_count,
+            sum(session_time) as total_session_time
+      FROM classification_events WHERE user_id IS NOT NULL
+      GROUP BY day, user_id;
+    SQL
   end
 
   desc 'Drop Continuous Aggregates Views'
@@ -86,6 +121,9 @@ namespace :db do
     DROP MATERIALIZED VIEW IF EXISTS daily_comment_count CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS daily_comment_count_per_project_and_user CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS daily_comment_count_per_user CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS daily_user_classification_count_and_time_per_workflow CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS daily_user_classification_count_and_time_per_project CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS daily_user_classification_count_and_time CASCADE;
     SQL
   end
 
