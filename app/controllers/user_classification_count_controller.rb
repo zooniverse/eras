@@ -19,7 +19,7 @@ class UserClassificationCountController < ApplicationController
 
   def sanitize_params
     params[:top_project_contributions] = params[:top_project_contributions].to_i if params[:top_project_contributions]
-    params[:time_spent] = (params[:time_spent].downcase == 'true') if params[:time_spent]
+    params[:time_spent] = params[:time_spent].casecmp?('true') if params[:time_spent]
   end
 
   def serializer_opts_from_params
