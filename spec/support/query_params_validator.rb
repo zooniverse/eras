@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'ensure valid query params' do |query, initial_params = {}|
+RSpec.shared_examples 'ensure valid query params' do |query, initial_params={}|
   let(:params) { initial_params.dup }
 
   it 'validates date range given' do

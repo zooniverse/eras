@@ -45,7 +45,7 @@ RSpec.describe UserClassificationCountController do
     end
 
     context 'param validations' do
-      it_behaves_like 'ensure valid query params', :query, { id: 1 }
+      it_behaves_like 'ensure valid query params', :query, id: 1
 
       it 'ensures you cannot query by workflow and top_project_contributions' do
         get :query, params:  { id: 1, top_project_contributions: 10, workflow_id: 1 }
