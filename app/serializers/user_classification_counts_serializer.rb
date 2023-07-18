@@ -27,7 +27,6 @@ class UserClassificationCountsSerializer
   end
 
   def response_data(user_counts, num_top_projects, show_time_spent)
-    data = user_counts
     # when calculating top projects, our records returned from query will be counts (and session time) per user per project bucketed by time
     # eg.  { period: '01-01-2020', count: 38, project_id: 1 }, { period: '01-01-2020', count: 40, project_id: 2}
     # vs. Our desired response format which is counts (and session time) grouped by bucketed time. { period: '01-02-2020', count: 78 }
@@ -37,9 +36,10 @@ class UserClassificationCountsSerializer
         total_in_period[:session_time] = counts_in_period.sum(&:session_time) if show_time_spent
         total_in_period
       end
-      data = counts_grouped_by_period.map { |period, totals| { period: }.merge(totals) }
+      counts_grouped_by_period.map { |period, totals| { period: }.merge(totals) }
+    else
+      user_counts
     end
-    data
   end
 
   def show_proj_contributions(response, num_top_projects_to_show)
