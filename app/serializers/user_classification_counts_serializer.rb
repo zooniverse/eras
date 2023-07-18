@@ -43,7 +43,7 @@ class UserClassificationCountsSerializer
   end
 
   def show_proj_contributions(response, num_top_projects_to_show)
-    response[:unique_projects_contributions] = unique_projects_count
+    response[:unique_project_contributions] = unique_projects_count
     response[:top_project_contributions] = top_project_contributions(num_top_projects_to_show)
   end
 
