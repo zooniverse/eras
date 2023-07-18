@@ -15,7 +15,7 @@ RSpec.describe CountClassifications do
       expect(count_classifications.counts.model).to be ClassificationCounts::DailyWorkflowClassificationCount
     end
 
-    it 'returns DailyProjectClassificationCount if workflow_id given' do
+    it 'returns DailyProjectClassificationCount if project_id given' do
       params[:project_id] = 2
       expect(count_classifications.counts.model).to be ClassificationCounts::DailyProjectClassificationCount
     end

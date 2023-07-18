@@ -11,9 +11,9 @@ class CountUserClassifications
 
   def call(params={})
     scoped = @counts
+    scoped = filter_by_user_id(scoped, params[:id])
     scoped = filter_by_workflow_id(scoped, params[:workflow_id])
     scoped = filter_by_project_id(scoped, params[:project_id])
-    scoped = filter_by_user_id(scoped, params[:id])
     filter_by_date_range(scoped, params[:start_date], params[:end_date])
   end
 
