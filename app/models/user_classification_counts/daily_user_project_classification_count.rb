@@ -7,6 +7,9 @@ module UserClassificationCounts
     attribute :total_session_time, :integer
     attribute :user_id, :integer
     attribute :project_id, :integer
+    attribute :session_time, :integer
+    attribute :count, :integer
+    attribute :period, :datetime
 
     def readonly?
       true
