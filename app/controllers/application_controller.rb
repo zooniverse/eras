@@ -3,10 +3,45 @@
 class ApplicationController < ActionController::API
   include Pundit::Authorization
   class ValidationError < StandardError; end
+  class Unauthorized < StandardError; end
 
   rescue_from ValidationError, with: :render_bad_request
+  rescue_from Unauthorized, with: :not_authorized
 
   private
+
+  def require_login
+    panoptes_user = client.me
+    @current_user = User.from_panoptes(panoptes_user)
+  rescue Panoptes::Client::ServerError
+    raise Unauthorized, 'could not check authentication with Panoptes'
+  end
+
+  def client
+    return @client if @client
+
+    authorization_header = request.headers['Authorization']
+    raise Unauthorized, 'missing authorization header' unless authorization_header
+
+    authorization_token = authorization_header.match(/\ABearer (.*)\Z/).try { |match| match[1] }
+    raise Unauthorized, 'missing bearer token' unless authorization_token
+
+    @client = Panoptes::Client.new \
+      env: Rails.env.to_sym,
+      auth: { token: authorization_token }
+  end
+
+  def panoptes_application_client
+    @panoptes_application_client ||= Panoptes::Client.new \
+      env: Rails.env.to_sym,
+      auth: { client_id: Rails.application.credentials.panopted_client_id,
+              client_secret: Rails.application.credentials.panoptes_client_secret },
+      params: { admin: true }
+  end
+
+  def not_authorized(exception)
+    render_exception :forbidden, exception
+  end
 
   def render_bad_request(exception)
     render_exception(400, exception)

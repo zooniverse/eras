@@ -3,6 +3,7 @@
 class UserClassificationCountController < ApplicationController
   before_action :validate_params
   before_action :sanitize_params
+  before_action :require_login
 
   def query
     # TODO: policies and scopes should be added
