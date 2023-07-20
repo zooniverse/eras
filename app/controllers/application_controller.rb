@@ -12,7 +12,7 @@ class ApplicationController < ActionController::API
 
   def require_login
     panoptes_user = client.me
-    @current_user = User.from_panoptes(panoptes_user)
+    @current_user = panoptes_user
   rescue Panoptes::Client::ServerError
     raise Unauthorized, 'could not check authentication with Panoptes'
   end
@@ -27,7 +27,6 @@ class ApplicationController < ActionController::API
     raise Unauthorized, 'missing bearer token' unless authorization_token
 
     @client = Panoptes::Client.new \
-      env: Rails.env.to_sym,
       auth: { token: authorization_token }
   end
 
