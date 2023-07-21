@@ -14,6 +14,6 @@ class QueriedUserContextPolicy < ApplicationPolicy
   end
 
   def current_user_is_queried_user?
-    (user['id'] == record.queried_user_id)
+    (user['id']&.to_i == record.queried_user_id&.to_i)
   end
 end
