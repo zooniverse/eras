@@ -5,8 +5,12 @@ class ApplicationController < ActionController::API
   class ValidationError < StandardError; end
   class Unauthorized < StandardError; end
 
+  attr_reader :current_user
+
   rescue_from ValidationError, with: :render_bad_request
   rescue_from Unauthorized, with: :not_authorized
+  rescue_from Pundit::NotAuthorizedError, with: :not_authorized
+  rescue_from Panoptes::Client::ResourceNotFound, with: :not_found
 
   private
 
@@ -27,6 +31,7 @@ class ApplicationController < ActionController::API
     raise Unauthorized, 'missing bearer token' unless authorization_token
 
     @client = Panoptes::Client.new \
+      env: 'production',
       auth: { token: authorization_token }
   end
 
@@ -40,6 +45,10 @@ class ApplicationController < ActionController::API
 
   def not_authorized(exception)
     render_exception :forbidden, exception
+  end
+
+  def not_found(exception)
+    render_exception :not_found, exception
   end
 
   def render_bad_request(exception)
