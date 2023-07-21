@@ -69,6 +69,23 @@ RSpec.describe UserClassificationCountController do
       end
     end
 
+    context 'missing token' do
+      it 'returns a 403 missing authorization header' do
+        get :query, params: { id: classification_event.user_id.to_s }
+        expected_response = { error: 'missing authorization header' }
+        expect(response.status).to eq(403)
+        expect(response.body).to eq(expected_response.to_json)
+      end
+
+      it 'returns a 403 missing when missing bearer token' do
+        request.headers['Authorization'] = 'asjdhaskdhsa'
+        get :query, params: { id: classification_event.user_id.to_s }
+        expected_response = { error: 'missing bearer token' }
+        expect(response.status).to eq(403)
+        expect(response.body).to eq(expected_response.to_json)
+      end
+    end
+
     context 'param validations' do
       it_behaves_like 'ensure valid query params', :query, id: 1
 
@@ -84,7 +101,7 @@ RSpec.describe UserClassificationCountController do
         expect(response.body).to include('Cannot query top projects and query by project/workflow')
       end
 
-      it 'ensures top_project_cotributions is an integer' do
+      it 'ensures top_project_contributions is an integer' do
         get :query, params: { id: 1, top_project_contributions: '20' }
         expect(controller.params[:top_project_contributions]).to eq(20)
       end
