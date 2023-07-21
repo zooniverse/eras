@@ -72,7 +72,7 @@ RSpec.describe UserClassificationCountController do
     context 'missing token' do
       it 'returns a 403 missing authorization header' do
         get :query, params: { id: classification_event.user_id.to_s }
-        expected_response = { error: 'missing authorization header' }
+        expected_response = { error: 'Missing Authorization header' }
         expect(response.status).to eq(403)
         expect(response.body).to eq(expected_response.to_json)
       end
@@ -80,10 +80,18 @@ RSpec.describe UserClassificationCountController do
       it 'returns a 403 missing when missing bearer token' do
         request.headers['Authorization'] = 'asjdhaskdhsa'
         get :query, params: { id: classification_event.user_id.to_s }
-        expected_response = { error: 'missing bearer token' }
+        expected_response = { error: 'Missing Bearer token' }
         expect(response.status).to eq(403)
         expect(response.body).to eq(expected_response.to_json)
       end
+    end
+
+    it 'returns forbidden if panoptes fails to find user' do
+      allow(controller).to receive(:client).and_raise(Panoptes::Client::ServerError, 'an error')
+      get :query, params: { id: classification_event.user_id.to_s }
+      expected_response = { error: 'Could not check authentication with Panoptes' }
+      expect(response.status).to eq(403)
+      expect(response.body).to eq(expected_response.to_json)
     end
 
     context 'param validations' do

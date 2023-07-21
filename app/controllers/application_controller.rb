@@ -17,17 +17,17 @@ class ApplicationController < ActionController::API
   def require_login
     @current_user = client.me
   rescue Panoptes::Client::ServerError
-    raise Unauthorized, 'could not check authentication with Panoptes'
+    raise Unauthorized, 'Could not check authentication with Panoptes'
   end
 
   def client
     return @client if @client
 
     authorization_header = request.headers['Authorization']
-    raise Unauthorized, 'missing authorization header' unless authorization_header
+    raise Unauthorized, 'Missing Authorization header' unless authorization_header
 
     authorization_token = authorization_header.match(/\ABearer (.*)\Z/).try { |match| match[1] }
-    raise Unauthorized, 'missing bearer token' unless authorization_token
+    raise Unauthorized, 'Missing Bearer token' unless authorization_token
 
     @client = Panoptes::Client.new \
       env: 'production',
