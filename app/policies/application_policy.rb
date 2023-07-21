@@ -6,11 +6,7 @@ class ApplicationPolicy
   def initialize(user, record)
     @user = user
     @record = record
-    raise Pundit::NotAuthorizedError, 'must be logged in to Panoptes' unless logged_in?
-  end
-
-  def logged_in?
-    !!user
+    raise Pundit::NotAuthorizedError, 'must be logged in to Panoptes' unless user
   end
 
   def panoptes_admin?

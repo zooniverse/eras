@@ -13,14 +13,12 @@ RSpec.describe ApplicationPolicy, type: :policy do
 
   context 'with a user' do
     it 'acts logged in' do
-      expect(policy.logged_in?).to be true
       expect(policy.panoptes_admin?).to be false
     end
 
     it 'acts like a panoptes_admin' do
       user['admin'] = true
       ApplicationPolicy.new user, records
-      expect(policy.logged_in?).to be true
       expect(policy.panoptes_admin?).to be true
     end
   end
