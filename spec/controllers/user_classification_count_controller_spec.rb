@@ -60,6 +60,15 @@ RSpec.describe UserClassificationCountController do
       end
     end
 
+    context 'not authorized user' do
+      before(:each) { authenticate! }
+
+      it 'returns a 403 not authorized response' do
+        get :query, params: { id: classification_event.user_id.to_s }
+        expect(response.status).to eq(403)
+      end
+    end
+
     context 'param validations' do
       it_behaves_like 'ensure valid query params', :query, id: 1
 
