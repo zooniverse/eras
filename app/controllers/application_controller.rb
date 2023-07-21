@@ -37,7 +37,7 @@ class ApplicationController < ActionController::API
   def panoptes_application_client
     @panoptes_application_client ||= Panoptes::Client.new \
       env: Rails.env.to_sym,
-      auth: { client_id: Rails.application.credentials.panopted_client_id,
+      auth: { client_id: Rails.application.credentials.panoptes_client_id,
               client_secret: Rails.application.credentials.panoptes_client_secret },
       params: { admin: true }
   end
