@@ -12,11 +12,11 @@ RSpec.describe ApplicationPolicy, type: :policy do
   let(:policy) { ApplicationPolicy.new user, records }
 
   context 'with a user' do
-    it 'acts logged in' do
+    it 'sets panoptes_admin? to be false if user is not a panoptes admin' do
       expect(policy.panoptes_admin?).to be false
     end
 
-    it 'acts like a panoptes_admin' do
+    it 'sets panoptes_admin? to true if user is panoptes admin' do
       user['admin'] = true
       ApplicationPolicy.new user, records
       expect(policy.panoptes_admin?).to be true
