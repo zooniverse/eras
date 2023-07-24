@@ -3,6 +3,10 @@ Enhanced Running Average Stats Service
 
 Zooniverse's Stats Service Measuring Volunteer Effort and Contribution.
 
+## Full Documentation
+
+See the [Wiki](https://github.com/zooniverse/eras/wiki) for full documentation, examples, operational details and other information
+
 ## Running App Locally With Docker
 ```
 docker-compose build
