@@ -27,5 +27,15 @@ FactoryBot.define do
       project_id { 2 }
       classification_id { 5 }
     end
+
+    factory :classification_with_diff_user do
+      user_id { 2 }
+      classification_id { 6 }
+    end
+
+    factory :classification_with_diff_session_time do
+      session_time { 2 }
+      classification_id { 7 }
+    end
   end
 end
