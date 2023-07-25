@@ -3,10 +3,9 @@
 class QueriedUserContextPolicy < ApplicationPolicy
   attr_reader :user
 
-  def initialize(user, record)
+  def initialize(user, _record)
     super
     @user = user
-    @record = record
   end
 
   def show?
@@ -14,6 +13,6 @@ class QueriedUserContextPolicy < ApplicationPolicy
   end
 
   def current_user_is_queried_user?
-    user['id']&.to_i == record.queried_user_id&.to_i
+    user['id']&.to_i == user['queried_user_id']&.to_i
   end
 end

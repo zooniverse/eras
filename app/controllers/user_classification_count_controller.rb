@@ -6,8 +6,8 @@ class UserClassificationCountController < ApplicationController
   before_action :require_login
 
   def query
-    @queried_user_context = QueriedUserContext.new(params[:id])
-    authorize @queried_user_context, :show?
+    current_user['queried_user_id'] = params[:id]
+    authorize :queried_user_context, :show?
     user_classification_counts = CountUserClassifications.new(user_classification_count_params).call(user_classification_count_params)
     render json: UserClassificationCountsSerializer.new(user_classification_counts), serializer_options: serializer_opts_from_params
   end

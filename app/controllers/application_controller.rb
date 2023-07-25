@@ -7,6 +7,9 @@ class ApplicationController < ActionController::API
 
   attr_reader :current_user
 
+  after_action :verify_authorized, except: [:index]
+  after_action :verify_policy_scoped, only: [:index]
+
   rescue_from ValidationError, with: :render_bad_request
   rescue_from Unauthorized, with: :not_authorized
   rescue_from Pundit::NotAuthorizedError, with: :not_authorized
@@ -30,7 +33,7 @@ class ApplicationController < ActionController::API
     raise Unauthorized, 'Missing Bearer token' unless authorization_token
 
     @client = Panoptes::Client.new \
-      env: 'production',
+      env: Rails.env.to_sym,
       auth: { token: authorization_token }
   end
 
