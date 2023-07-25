@@ -24,7 +24,7 @@ class UserClassificationCountController < ApplicationController
 
   def serializer_opts_from_params
     { period: params[:period],
-      show_time_spent: params[:time_spent],
+      time_spent: params[:time_spent],
       top_project_contributions: params[:top_project_contributions] }
   end
 
