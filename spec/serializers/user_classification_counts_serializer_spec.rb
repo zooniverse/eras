@@ -16,8 +16,8 @@ RSpec.describe UserClassificationCountsSerializer do
     expect(serialized[:total_count]).to eq(user_classification_count.count)
   end
 
-  it 'returns total_count & time_spent if show_time_spent is true' do
-    serialized = count_serializer.as_json(serializer_options: { show_time_spent: true })
+  it 'returns total_count & time_spent if time_spent is true' do
+    serialized = count_serializer.as_json(serializer_options: { time_spent: true })
     expect(serialized).to have_key(:total_count)
     expect(serialized).to have_key(:time_spent)
     expect(serialized[:time_spent]).to eq(user_classification_count.session_time)
@@ -42,7 +42,7 @@ RSpec.describe UserClassificationCountsSerializer do
     count2 = build(:daily_user_project_classification_count)
     classification_counts = [user_classification_count, count2]
     serializer = described_class.new(classification_counts)
-    serialized = serializer.as_json(serializer_options: { show_time_spent: true })
+    serialized = serializer.as_json(serializer_options: { time_spent: true })
     expect(serialized[:time_spent]).to eq(classification_counts.sum(&:session_time))
   end
 
@@ -94,7 +94,7 @@ RSpec.describe UserClassificationCountsSerializer do
     end
 
     it 'shows response data with session_times bucketed by period' do
-      serialized = serializer.as_json(serializer_options: { top_project_contributions: 10, period: 'day', show_time_spent: true })
+      serialized = serializer.as_json(serializer_options: { top_project_contributions: 10, period: 'day', time_spent: true })
       expect(serialized[:data].length).to eq(2)
       expect(serialized[:data][0][:session_time]).to eq(user_diff_period_classification_count.session_time)
       expect(serialized[:data][1][:session_time]).to eq(user_classification_count.session_time + user_diff_proj_count.session_time)

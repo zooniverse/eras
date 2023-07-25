@@ -9,13 +9,12 @@ class UserClassificationCountsSerializer
 
   def as_json(options)
     serializer_options = options[:serializer_options]
-    show_time_spent = serializer_options[:show_time_spent]
-    num_top_projects_to_show = serializer_options[:top_project_contributions]
+    show_time_spent = serializer_options[:time_spent]
     total_count = user_classification_counts.sum(&:count).to_i
     response = { total_count: }
     calculate_time_spent(user_classification_counts, response) if show_time_spent
-    show_proj_contributions(response, num_top_projects_to_show) if num_top_projects_to_show
-    response[:data] = response_data(user_classification_counts, num_top_projects_to_show, show_time_spent) if serializer_options[:period]
+    show_proj_contributions(response, serializer_options[:top_project_contributions]) if serializer_options[:top_project_contributions]
+    response[:data] = response_data(user_classification_counts, serializer_options[:top_project_contributions], show_time_spent:) if serializer_options[:period]
     response
   end
 
@@ -26,7 +25,7 @@ class UserClassificationCountsSerializer
     response[:time_spent] = total_time_spent
   end
 
-  def response_data(user_counts, num_top_projects, show_time_spent)
+  def response_data(user_counts, num_top_projects, show_time_spent:)
     # when calculating top projects, our records returned from query will be counts (and session time) per user per project bucketed by time
     # eg.  { period: '01-01-2020', count: 38, project_id: 1 }, { period: '01-01-2020', count: 40, project_id: 2}
     # vs. Our desired response format which is counts (and session time) grouped by bucketed time. { period: '01-02-2020', count: 78 }
