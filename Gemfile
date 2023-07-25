@@ -6,6 +6,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', require: false
 gem 'composite_primary_keys'
+gem 'panoptes-client'
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 1.1'
 # Use the Puma web server [https://github.com/puma/puma]

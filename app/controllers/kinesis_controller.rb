@@ -2,6 +2,8 @@
 
 class KinesisController < ApplicationController
   def create
+    # TODO: Authorizations on Kinesis
+    skip_authorization
     kinesis_stream.create_events(params['payload'])
     head :no_content
   end
