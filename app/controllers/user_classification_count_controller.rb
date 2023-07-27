@@ -20,7 +20,7 @@ class UserClassificationCountController < ApplicationController
   end
 
   def sanitize_params
-    params[:project_contributions] = params[:project_contributions].casecmp?('true')  if params[:project_contributions]
+    params[:project_contributions] = params[:project_contributions].casecmp?('true') if params[:project_contributions]
     params[:time_spent] = params[:time_spent].casecmp?('true') if params[:time_spent]
   end
 
