@@ -11,7 +11,6 @@ RSpec.describe UserClassificationCountsSerializer do
     expect(serialized).to have_key(:total_count)
     expect(serialized).not_to have_key(:data)
     expect(serialized).not_to have_key(:time_spent)
-    expect(serialized).not_to have_key(:unique_project_contributions)
     expect(serialized).not_to have_key(:project_contributions)
     expect(serialized[:total_count]).to eq(user_classification_count.count)
   end
@@ -46,12 +45,10 @@ RSpec.describe UserClassificationCountsSerializer do
     expect(serialized[:time_spent]).to eq(classification_counts.sum(&:session_time))
   end
 
-  it 'returns unique_project_contributions count and project_contributions if project_contributions' do
+  it 'returns project_contributions if project_contributions' do
     serialized = count_serializer.as_json(serializer_options: { project_contributions: true })
     expect(serialized).to have_key(:total_count)
-    expect(serialized).to have_key(:unique_project_contributions)
     expect(serialized).to have_key(:project_contributions)
-    expect(serialized[:unique_project_contributions]).to eq(1)
     expect(serialized[:project_contributions].length).to eq(1)
     expected_project_contributions = { project_id: user_classification_count.project_id, count: user_classification_count.count }
     expect(serialized[:project_contributions][0]).to eq(expected_project_contributions)
@@ -61,11 +58,6 @@ RSpec.describe UserClassificationCountsSerializer do
     let(:user_diff_proj_count) { build(:user_diff_proj_classification_count) }
     let(:user_diff_period_classification_count) { build(:user_diff_period_classification_count) }
     let(:serializer) { described_class.new([user_diff_period_classification_count, user_classification_count, user_diff_proj_count]) }
-
-    it 'correctly counts unique_projects' do
-      serialized = serializer.as_json(serializer_options: { project_contributions: true })
-      expect(serialized[:unique_project_contributions]).to eq(2)
-    end
 
     it 'shows project_contributions ordered desc by count' do
       serialized = serializer.as_json(serializer_options: { project_contributions: true })

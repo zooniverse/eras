@@ -14,7 +14,7 @@ class UserClassificationCountsSerializer
     total_count = user_classification_counts.sum(&:count).to_i
     response = { total_count: }
     calculate_time_spent(user_classification_counts, response) if show_time_spent
-    display_project_contributions(response) if show_project_contributions
+    response[:project_contributions] = project_contributions if show_project_contributions
     response[:data] = response_data(user_classification_counts, show_project_contributions:, show_time_spent:) if serializer_options[:period]
     response
   end
@@ -40,15 +40,6 @@ class UserClassificationCountsSerializer
     else
       user_counts
     end
-  end
-
-  def display_project_contributions(response)
-    response[:unique_project_contributions] = unique_projects_count
-    response[:project_contributions] = project_contributions
-  end
-
-  def unique_projects_count
-    @user_classification_counts.map(&:project_id).uniq.count
   end
 
   def project_contributions

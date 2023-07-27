@@ -44,7 +44,6 @@ RSpec.describe UserClassificationCountController do
         get :query, params: { id: classification_event.user_id, project_contributions: true }
         expect(response.status).to eq(200)
         response_body = JSON.parse(response.body)
-        expect(response_body['unique_project_contributions']).to eq(1)
         expect(response_body['project_contributions'].length).to eq(1)
         expect(response_body['project_contributions'][0]['project_id']).to eq(classification_event.project_id)
       end
