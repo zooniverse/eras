@@ -16,21 +16,21 @@ class UserClassificationCountController < ApplicationController
 
   def validate_params
     super
-    raise ValidationError, 'Cannot query top projects and query by project/workflow' if params[:top_project_contributions] && (params[:workflow_id] || params[:project_id])
+    raise ValidationError, 'Cannot query top projects and query by project/workflow' if params[:project_contributions] && (params[:workflow_id] || params[:project_id])
   end
 
   def sanitize_params
-    params[:top_project_contributions] = params[:top_project_contributions].to_i if params[:top_project_contributions]
+    params[:project_contributions] = params[:project_contributions].casecmp?('true')  if params[:project_contributions]
     params[:time_spent] = params[:time_spent].casecmp?('true') if params[:time_spent]
   end
 
   def serializer_opts_from_params
     { period: params[:period],
       time_spent: params[:time_spent],
-      top_project_contributions: params[:top_project_contributions] }
+      project_contributions: params[:project_contributions] }
   end
 
   def user_classification_count_params
-    params.permit(:id, :start_date, :end_date, :period, :workflow_id, :project_id, :top_project_contributions, :time_spent)
+    params.permit(:id, :start_date, :end_date, :period, :workflow_id, :project_id, :project_contributions, :time_spent)
   end
 end
