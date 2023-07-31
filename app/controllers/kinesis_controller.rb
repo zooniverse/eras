@@ -34,7 +34,9 @@ class KinesisController < ApplicationController
   end
 
   def allow_unauthenticated_request?
-    Rails.env.development? || Rails.env.test?
+    return true if Rails.env.development? || Rails.env.test?
+
+    head :forbidden
   end
 
   def kinesis_stream
