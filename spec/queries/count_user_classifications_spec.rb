@@ -6,7 +6,7 @@ RSpec.describe CountUserClassifications do
   let(:params) { {} }
   let(:count_user_classifications) { described_class.new(params) }
   describe 'relation' do
-    it 'returns DailyUserClassificationCount if not given workflow, project ids or top_project_contributions' do
+    it 'returns DailyUserClassificationCount if not given workflow, project ids or project_contributions' do
       expect(count_user_classifications.counts.model).to be UserClassificationCounts::DailyUserClassificationCount
     end
 
@@ -20,8 +20,8 @@ RSpec.describe CountUserClassifications do
       expect(count_user_classifications.counts.model).to be UserClassificationCounts::DailyUserProjectClassificationCount
     end
 
-    it 'returns DailyUserProjectClassificationCount if querying top_project_contributions' do
-      params[:top_project_contributions] = 2
+    it 'returns DailyUserProjectClassificationCount if querying project_contributions' do
+      params[:project_contributions] = true
       expect(count_user_classifications.counts.model).to be UserClassificationCounts::DailyUserProjectClassificationCount
     end
   end
@@ -47,8 +47,8 @@ RSpec.describe CountUserClassifications do
       expect(counts.to_sql).to eq(expected_select_query)
     end
 
-    it 'queries for project_id if querying for top_project_contributions' do
-      params[:top_project_contributions] = 10
+    it 'queries for project_id if querying for project_contributions' do
+      params[:project_contributions] = true
       counts = count_user_classifications.call(params)
       expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count, project_id FROM \"daily_user_classification_count_and_time_per_project\" GROUP BY period, project_id ORDER BY period"
       expect(counts.to_sql).to eq(expected_select_query)

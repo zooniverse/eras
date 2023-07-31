@@ -24,19 +24,19 @@ class CountUserClassifications
   end
 
   def group_by_clause(params)
-    params[:top_project_contributions] ? 'period, project_id' : 'period'
+    params[:project_contributions] ? 'period, project_id' : 'period'
   end
 
   def select_clause(params)
     period = params[:period]
     clause = select_by(period, 'classification')
     clause += ', SUM(total_session_time)::float AS session_time' if params[:time_spent]
-    clause += ', project_id' if params[:top_project_contributions]
+    clause += ', project_id' if params[:project_contributions]
     clause
   end
 
   def relation(params)
-    if params[:project_id] || params[:top_project_contributions]
+    if params[:project_id] || params[:project_contributions]
       UserClassificationCounts::DailyUserProjectClassificationCount
     elsif params[:workflow_id]
       UserClassificationCounts::DailyUserWorkflowClassificationCount
