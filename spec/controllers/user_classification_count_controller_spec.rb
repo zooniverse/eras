@@ -40,13 +40,12 @@ RSpec.describe UserClassificationCountController do
         expect(response_body['data'][0]['session_time']).to eq(classification_event.session_time)
       end
 
-      it 'returns top contributions and unique project contributions if querying for top_project_contributions' do
-        get :query, params: { id: classification_event.user_id, top_project_contributions: 10 }
+      it 'returns unique project contributions count if querying for project_contributions' do
+        get :query, params: { id: classification_event.user_id, project_contributions: true }
         expect(response.status).to eq(200)
         response_body = JSON.parse(response.body)
-        expect(response_body['unique_project_contributions']).to eq(1)
-        expect(response_body['top_project_contributions'].length).to eq(1)
-        expect(response_body['top_project_contributions'][0]['project_id']).to eq(classification_event.project_id)
+        expect(response_body['project_contributions'].length).to eq(1)
+        expect(response_body['project_contributions'][0]['project_id']).to eq(classification_event.project_id)
       end
     end
 
@@ -97,21 +96,26 @@ RSpec.describe UserClassificationCountController do
     context 'param validations' do
       it_behaves_like 'ensure valid query params', :query, id: 1
 
-      it 'ensures you cannot query by workflow and top_project_contributions' do
-        get :query, params:  { id: 1, top_project_contributions: 10, workflow_id: 1 }
+      it 'ensures you cannot query by workflow and project_contributions' do
+        get :query, params:  { id: 1, project_contributions: true, workflow_id: 1 }
         expect(response.status).to eq(400)
         expect(response.body).to include('Cannot query top projects and query by project/workflow')
       end
 
       it 'ensures you cannot query by project and top project contributions' do
-        get :query, params: { id: 1, top_project_contributions: 10, project_id: 1 }
+        get :query, params: { id: 1, project_contributions: true, project_id: 1 }
         expect(response.status).to eq(400)
         expect(response.body).to include('Cannot query top projects and query by project/workflow')
       end
 
-      it 'ensures top_project_contributions is an integer' do
-        get :query, params: { id: 1, top_project_contributions: '20' }
-        expect(controller.params[:top_project_contributions]).to eq(20)
+      it 'ensures project_contributions is an boolean' do
+        get :query, params: { id: 1, project_contributions: '100' }
+        expect(controller.params[:project_contributions]).to eq(false)
+      end
+
+      it 'ensures project_contributions is true if given string true' do
+        get :query, params: { id: 1, project_contributions: 'true' }
+        expect(controller.params[:project_contributions]).to eq(true)
       end
 
       it 'ensures time_spent is a boolean' do
