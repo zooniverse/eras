@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class ApplicationController < ActionController::API
+  include ActionController::HttpAuthentication::Basic
+  include ActionController::HttpAuthentication::Basic::ControllerMethods
   include Pundit::Authorization
   class ValidationError < StandardError; end
   class Unauthorized < StandardError; end
