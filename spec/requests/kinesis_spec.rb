@@ -13,4 +13,21 @@ RSpec.describe 'Kinesis', type: :request do
     expect(ClassificationEvent.count).to eq(1)
     expect(ClassificationUserGroup.count).to eq(2)
   end
+
+  it 'requires HTTP Basic auth' do
+    allow(Rails.application.credentials).to receive(:kinesis_username).and_return('test_basic_auth')
+    allow(Rails.application.credentials).to receive(:kinesis_password).and_return('test_basic_auth123')
+    post '/kinesis', headers: { 'CONTENT_TYPE' => 'application/json' },
+                     params: '{"payload": []}',
+                     env: { 'HTTP_AUTHORIZATION' => ActionController::HttpAuthentication::Basic.encode_credentials('wrong', 'incorrect') }
+    expect(response.status).to eq(403)
+  end
+
+  it 'returns 403 forbidden when no credentials given in non-dev env' do
+    allow(Rails.env).to receive(:development?).and_return(false)
+    allow(Rails.env).to receive(:test?).and_return(false)
+    post '/kinesis', headers: { 'CONTENT_TYPE' => 'application/json' },
+                     params: '{"payload": []}'
+    expect(response.status).to eq(403)
+  end
 end

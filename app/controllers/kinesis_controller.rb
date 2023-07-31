@@ -24,7 +24,6 @@ class KinesisController < ApplicationController
   def authenticate(given_username, given_password)
     desired_username = Rails.application.credentials.kinesis_username
     desired_password = Rails.application.credentials.kinesis_password
-
     if desired_username.present? || desired_password.present?
       given_username == desired_username && given_password == desired_password
     else
