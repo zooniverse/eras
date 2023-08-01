@@ -16,7 +16,7 @@ class UserClassificationCountController < ApplicationController
 
   def validate_params
     super
-    raise ValidationError, 'Cannot query top projects and query by project/workflow' if params[:project_contributions] && (params[:workflow_id] || params[:project_id])
+    raise ValidationError, 'Cannot query projects contributions and query by project/workflow' if params[:project_contributions] && (params[:workflow_id] || params[:project_id])
   end
 
   def sanitize_params
