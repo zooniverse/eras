@@ -15,7 +15,7 @@ class UserGroupClassificationCountController < ApplicationController
     else
       group_classification_counts = CountGroupClassifications.new(group_classification_count_params).call(group_classification_count_params)
       group_active_user_classification_counts = CountGroupActiveUserClassifications.new(group_classification_count_params).call(group_classification_count_params)
-      # show group contributions if not querying by project_id or workflow_id
+      # calculate group project contributions if not querying by project_id or workflow_id
       project_contributions = CountGroupProjectContributions.new.call(group_classification_count_params) unless params[:project_id] || params[:workflow_id]
       render json: UserGroupClassificationCountsSerializer.new(group_classification_counts, group_active_user_classification_counts, project_contributions),
              serializer_options: serializer_opts_from_params
