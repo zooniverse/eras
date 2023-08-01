@@ -6,7 +6,7 @@ class CreateDailyGroupUserClassificationCountAndTime < ActiveRecord::Migration[7
   ## Even though the view are very similar we cannot query from just daily_user_classification_count_and_time to get stats info of that user for that group.
   ## Reason being:
   ## A) daily_user_classification_count_and_time does not consider when a user has joined a group.
-  ## (So if we queried for all time for the user group, the user's old classifications [when he/she/they were not part of the group] would be counted towards the user group)
+  ## (So if we queried for all time for the user group, the user's old classifications [when he/she/they were not part of the group] would be counted towards the user group) [Vice versa if a user LEAVES a user group]
   ## B) On the flip side, we cannot query from just daily_group_classification_count_and_time_per_user, because not every user belongs to a group.
   def change
     execute <<~SQL
