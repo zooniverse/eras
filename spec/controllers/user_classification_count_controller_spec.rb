@@ -99,13 +99,13 @@ RSpec.describe UserClassificationCountController do
       it 'ensures you cannot query by workflow and project_contributions' do
         get :query, params:  { id: 1, project_contributions: true, workflow_id: 1 }
         expect(response.status).to eq(400)
-        expect(response.body).to include('Cannot query top projects and query by project/workflow')
+        expect(response.body).to include('Cannot query for project contributions and query by project/workflow')
       end
 
       it 'ensures you cannot query by project and top project contributions' do
         get :query, params: { id: 1, project_contributions: true, project_id: 1 }
         expect(response.status).to eq(400)
-        expect(response.body).to include('Cannot query top projects and query by project/workflow')
+        expect(response.body).to include('Cannot query for project contributions and query by project/workflow')
       end
 
       it 'ensures project_contributions is an boolean' do
