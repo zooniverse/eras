@@ -30,7 +30,7 @@ module Filterable
   end
 
   def filter_by_user_group_id(scoped, user_group_id)
-    return scoped unless user_id.present?
+    return scoped unless user_group_id.present?
 
     scoped.where(user_group_id: user_group_id)
   end
