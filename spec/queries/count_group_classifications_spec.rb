@@ -4,33 +4,33 @@ require 'rails_helper'
 
 RSpec.describe CountGroupClassifications do
   let(:params) { {} }
-  let(:group_classifications_query_klass) { described_class.new(params) }
+  let(:group_classifications_query) { described_class.new(params) }
   describe 'relation' do
     it 'returns DailyGroupClassificationCount if not given workflow, project id' do
-      expect(group_classifications_query_klass.counts.model).to be UserGroupClassificationCounts::DailyGroupClassificationCount
+      expect(group_classifications_query.counts.model).to be UserGroupClassificationCounts::DailyGroupClassificationCount
     end
 
     it 'returns DailyGroupWorkflowClassificationCount if workflow_id given' do
       params[:workflow_id] = 2
-      expect(group_classifications_query_klass.counts.model).to be UserGroupClassificationCounts::DailyGroupWorkflowClassificationCount
+      expect(group_classifications_query.counts.model).to be UserGroupClassificationCounts::DailyGroupWorkflowClassificationCount
     end
 
     it 'returns DailyGroupProjectClassificationCount if project_id given' do
       params[:project_id] = 2
-      expect(group_classifications_query_klass.counts.model).to be UserGroupClassificationCounts::DailyGroupProjectClassificationCount
+      expect(group_classifications_query.counts.model).to be UserGroupClassificationCounts::DailyGroupProjectClassificationCount
     end
   end
 
   describe 'select_clause' do
     it 'buckets counts by year by default' do
-      counts = group_classifications_query_klass.call(params)
+      counts = group_classifications_query.call(params)
       expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count, SUM(total_session_time)::float AS session_time FROM \"daily_group_classification_count_and_time\" GROUP BY period ORDER BY period"
       expect(counts.to_sql).to eq(expected_select_query)
     end
 
     it 'buckets counts by given period' do
       params[:period] = 'week'
-      counts = group_classifications_query_klass.call(params)
+      counts = group_classifications_query.call(params)
       expected_select_query = "SELECT time_bucket('1 week', day) AS period, SUM(classification_count)::integer AS count, SUM(total_session_time)::float AS session_time FROM \"daily_group_classification_count_and_time\" GROUP BY period ORDER BY period"
       expect(counts.to_sql).to eq(expected_select_query)
     end
@@ -53,12 +53,12 @@ RSpec.describe CountGroupClassifications do
     it_behaves_like 'is filterable by date range'
 
     it 'filters by given user_group_id' do
-      counts = group_classifications_query_klass.call(params)
+      counts = group_classifications_query.call(params)
       expect(counts.to_sql).to include(".\"user_group_id\" = #{classification_user_group.user_id}")
     end
 
     it 'returns classification counts of given user group' do
-      counts = group_classifications_query_klass.call(params)
+      counts = group_classifications_query.call(params)
       # because default is bucket by year and all data created in the same year, we expect counts to look something like
       # [<UserGroupClassificationCounts::DailyGroupClassificationCount period: 01-01-2023, count: 5, session_time: 10>]
       current_year = Date.today.year
@@ -69,7 +69,7 @@ RSpec.describe CountGroupClassifications do
 
     it 'returns counts bucketed by given period' do
       params[:period] = 'day'
-      counts = group_classifications_query_klass.call(params)
+      counts = group_classifications_query.call(params)
       expect(counts.length).to eq(2)
       expect(counts[0].count).to eq(1)
       expect(counts[0].period).to eq((Date.today - 1).to_s)
@@ -80,7 +80,7 @@ RSpec.describe CountGroupClassifications do
     it 'returns counts of events with given workflow' do
       workflow_id = diff_workflow_event.workflow_id
       params[:workflow_id] = workflow_id.to_s
-      counts = group_classifications_query_klass.call(params)
+      counts = group_classifications_query.call(params)
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(1)
     end
@@ -88,7 +88,7 @@ RSpec.describe CountGroupClassifications do
     it 'returns counts of events with given project' do
       project_id = diff_project_event.project_id
       params[:project_id] = project_id.to_s
-      counts = group_classifications_query_klass.call(params)
+      counts = group_classifications_query.call(params)
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(1)
     end
@@ -98,7 +98,7 @@ RSpec.describe CountGroupClassifications do
       yesterday = Date.today - 1
       params[:start_date] = last_week.to_s
       params[:end_date] = yesterday.to_s
-      counts = group_classifications_query_klass.call(params)
+      counts = group_classifications_query.call(params)
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(1)
     end

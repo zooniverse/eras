@@ -2,7 +2,7 @@
 
 class CountClassifications
   include Filterable
-  include Selectable
+  include SelectableWithTimeBucket
   attr_reader :counts
 
   def initialize(params)
@@ -19,7 +19,7 @@ class CountClassifications
   private
 
   def initial_scope(relation, period)
-    relation.select(select_by(period, 'classification')).group('period').order('period')
+    relation.select(select_and_time_bucket_by(period, 'classification')).group('period').order('period')
   end
 
   def relation(params)

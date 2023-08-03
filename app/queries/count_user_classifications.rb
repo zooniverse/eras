@@ -2,7 +2,7 @@
 
 class CountUserClassifications
   include Filterable
-  include Selectable
+  include SelectableWithTimeBucket
   attr_reader :counts
 
   def initialize(params)
@@ -29,7 +29,7 @@ class CountUserClassifications
 
   def select_clause(params)
     period = params[:period]
-    clause = select_by(period, 'classification')
+    clause = select_and_time_bucket_by(period, 'classification')
     clause += ', SUM(total_session_time)::float AS session_time' if params[:time_spent]
     clause += ', project_id' if params[:project_contributions]
     clause

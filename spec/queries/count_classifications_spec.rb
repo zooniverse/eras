@@ -21,7 +21,7 @@ RSpec.describe CountClassifications do
     end
   end
 
-  describe 'select_by' do
+  describe 'select_and_time_bucket_by' do
     it 'buckets counts by year by default' do
       counts = count_classifications.call(params)
       expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count FROM \"daily_classification_count\" GROUP BY period ORDER BY period"
@@ -45,7 +45,6 @@ RSpec.describe CountClassifications do
     it_behaves_like 'is filterable by workflow'
     it_behaves_like 'is filterable by project'
     it_behaves_like 'is filterable by date range'
-
 
     it 'returns counts of all events when no params given' do
       counts = count_classifications.call(params)
