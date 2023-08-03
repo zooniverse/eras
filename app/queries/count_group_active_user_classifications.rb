@@ -2,7 +2,6 @@
 
 class CountGroupActiveUserClassifications
   include Filterable
-  include SelectableWithTimeBucket
   attr_reader :counts
 
   def initialize(params)
