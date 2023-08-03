@@ -11,11 +11,13 @@ class UserGroupClassificationCountController < ApplicationController
     # authorize :queried_user_context, :show?
     skip_authorization
     if params[:individual_stats_breakdown]
-      puts 'WILL DO THIS LATER BUT WILL HAVE TO QUERY FROM DailyGroupClassificationCountAndTimePerUserPerProject'
+      # TODO: in a separate PR
+      # Plan is to query from DailyGroupClassificationCountAndTimePerUserPerProject
     else
       group_classification_counts = CountGroupClassifications.new(group_classification_count_params).call(group_classification_count_params)
       group_active_user_classification_counts = CountGroupActiveUserClassifications.new(group_classification_count_params).call(group_classification_count_params)
-      # calculate group project contributions if not querying by project_id or workflow_id
+
+      # We only calculate group project contributions as long as we are not querying by project_id or workflow_id
       project_contributions = CountGroupProjectContributions.new.call(group_classification_count_params) unless params[:project_id] || params[:workflow_id]
       render json: UserGroupClassificationCountsSerializer.new(group_classification_counts, group_active_user_classification_counts, project_contributions),
              serializer_options: serializer_opts_from_params
