@@ -6,9 +6,10 @@ class UserGroupClassificationCountController < ApplicationController
   #   before_action :require_login
 
   def query
-    # TODO: pundit policy for user groups, will probably look something like below, but for now, SKIP authorization
+    # TODO: Skipping Auth for now, Will introduce this in a separate PR
+    # pundit policy for user groups, will probably look something like below:
     # current_user['queried_user_group_id'] = params[:id]
-    # authorize :queried_user_context, :show?
+    # authorize :queried_user_group_context, :show?
     skip_authorization
     if params[:individual_stats_breakdown]
       # TODO: in a separate PR
