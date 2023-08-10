@@ -9,7 +9,7 @@ class UserGroupMemberStatsBreakdownSerializer
 
   def as_json(_options)
     {
-      group_member_stats_breakdown: counts_grouped_by_user.sort_by { |c| c[:count] }.reverse
+      group_member_stats_breakdown: counts_grouped_by_user.sort_by { |member_stat| member_stat[:count] }.reverse
     }
   end
 
