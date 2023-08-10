@@ -23,7 +23,7 @@ class CountGroupActiveUserClassifications
   end
 
   def select_clause
-    'user_id, SUM(classification_count)::integer AS count'
+    'user_id, SUM(classification_count)::integer AS count, SUM(total_session_time)::float AS session_time'
   end
 
   def relation(params)
