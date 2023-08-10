@@ -24,7 +24,7 @@ RSpec.describe CountGroupActiveUserClassifications do
   describe 'select_clause' do
     it 'selects user_id and orders users by count' do
       counts = group_active_users_query.call(params)
-      expected_select_query = 'SELECT user_id, SUM(classification_count)::integer AS count FROM "daily_group_classification_count_and_time_per_user" '
+      expected_select_query = 'SELECT user_id, SUM(classification_count)::integer AS count, SUM(total_session_time)::float AS session_time FROM "daily_group_classification_count_and_time_per_user" '
       expected_select_query += 'GROUP BY "daily_group_classification_count_and_time_per_user"."user_id" ORDER BY count DESC'
       expect(counts.to_sql).to eq(expected_select_query)
     end
