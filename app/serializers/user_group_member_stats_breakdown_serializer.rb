@@ -9,7 +9,7 @@ class UserGroupMemberStatsBreakdownSerializer
 
   def as_json(_options)
     {
-      group_member_stats_breakdown: counts_grouped_by_user
+      group_member_stats_breakdown: counts_grouped_by_user.sort_by { |c| c[:count] }.reverse
     }
   end
 
@@ -22,7 +22,7 @@ class UserGroupMemberStatsBreakdownSerializer
       total_per_member[:project_contributions] = individual_member_project_contributions(member_counts_per_project)
       total_per_member
     end
-    counts_grouped_by_member.map { |user_id, totals| { user_id: }.merge(totals) }.sort_by(&:count)
+    counts_grouped_by_member.map { |user_id, totals| { user_id: }.merge(totals) }
   end
 
   def individual_member_project_contributions(member_counts_per_project)
