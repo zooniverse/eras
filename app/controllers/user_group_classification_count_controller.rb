@@ -12,8 +12,9 @@ class UserGroupClassificationCountController < ApplicationController
     # authorize :queried_user_group_context, :show?
     skip_authorization
     if params[:individual_stats_breakdown]
-      # TODO: in a separate PR
-      # Plan is to query from DailyGroupClassificationCountAndTimePerUserPerProject
+      group_member_classification_counts = CountGroupMemberBreakdown.new.call(group_classification_count_params)
+
+      render json: UserGroupMemberStatsBreakdownSerializer.new(group_member_classification_counts)
     else
       group_classification_counts = CountGroupClassifications.new(group_classification_count_params).call(group_classification_count_params)
       group_active_user_classification_counts = CountGroupActiveUserClassifications.new(group_classification_count_params).call(group_classification_count_params)
