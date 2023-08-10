@@ -6,28 +6,39 @@ RSpec.describe UserGroupClassificationCountController do
   describe 'GET query' do
     let!(:classification_user_group) { create(:classification_user_group) }
 
-    it 'returns total_count, time_spent, active_users, and project_contributions of user group' do
-      get :query, params: { id: classification_user_group.user_group_id.to_s }
-      expect(response.status).to eq(200)
-      response_body = JSON.parse(response.body)
-      expect(response_body['total_count']).to eq(1)
-      expect(response_body['time_spent']).to eq(classification_user_group.session_time)
-      expect(response_body['active_users']).to eq(1)
-      expect(response_body['project_contributions'].length).to eq(1)
+    context 'individual_stats_breakdown is false/not a param' do
+      it 'returns total_count, time_spent, active_users, and project_contributions of user group' do
+        get :query, params: { id: classification_user_group.user_group_id.to_s }
+        expect(response.status).to eq(200)
+        response_body = JSON.parse(response.body)
+        expect(response_body['total_count']).to eq(1)
+        expect(response_body['time_spent']).to eq(classification_user_group.session_time)
+        expect(response_body['active_users']).to eq(1)
+        expect(response_body['project_contributions'].length).to eq(1)
+      end
+
+      it 'does not compute project_contributions when params[:project_id] given' do
+        get :query, params: { id: classification_user_group.user_group_id.to_s, project_id: 2 }
+        expect(response.status).to eq(200)
+        response_body = JSON.parse(response.body)
+        expect(response_body).not_to have_key('project_contributions')
+      end
+
+      it 'does not compute project_contributions when params[:workflow_id] given' do
+        get :query, params: { id: classification_user_group.user_group_id.to_s, workflow_id: 2 }
+        expect(response.status).to eq(200)
+        response_body = JSON.parse(response.body)
+        expect(response_body).not_to have_key('project_contributions')
+      end
     end
 
-    it 'does not compute project_contributions when params[:project_id] given' do
-      get :query, params: { id: classification_user_group.user_group_id.to_s, project_id: 2 }
-      expect(response.status).to eq(200)
-      response_body = JSON.parse(response.body)
-      expect(response_body).not_to have_key(:project_contributions)
-    end
-
-    it 'does not compute project_contributions when params[:workflow_id] given' do
-      get :query, params: { id: classification_user_group.user_group_id.to_s, workflow_id: 2 }
-      expect(response.status).to eq(200)
-      response_body = JSON.parse(response.body)
-      expect(response_body).not_to have_key(:project_contributions)
+    context 'individual_stats_breakdown is true' do
+      it 'returns group_member_stats_breakdown' do
+        get :query, params: { id: classification_user_group.user_group_id.to_s, individual_stats_breakdown: true }
+        expect(response.status).to eq(200)
+        response_body = JSON.parse(response.body)
+        expect(response_body).to have_key('group_member_stats_breakdown')
+      end
     end
 
     context 'param validations' do
