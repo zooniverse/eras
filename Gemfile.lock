@@ -175,7 +175,7 @@ GEM
     pry-byebug (3.10.1)
       byebug (~> 11.0)
       pry (>= 0.13, < 0.15)
-    puma (5.6.5)
+    puma (5.6.7)
       nio4r (~> 2.0)
     pundit (2.3.0)
       activesupport (>= 3.0.0)
@@ -282,7 +282,7 @@ DEPENDENCIES
   panoptes-client
   pg (~> 1.1)
   pry-byebug
-  puma (~> 5.0)
+  puma (~> 5.6)
   pundit
   rack-cors
   rails (~> 7.0, >= 7.0.4.3)
