@@ -9,15 +9,16 @@ class QueriedUserGroupContextPolicy < ApplicationPolicy
   end
 
   def show?
-    show_group_stats = if individual_stats_breakdown_requested?
-      show_ind_stats_breakdown
+    return true if panoptes_admin?
+
+    if individual_stats_breakdown_requested?
+      show_ind_stats_breakdown?
     else
-      show_group_aggregate_stats
+      show_group_aggregate_stats?
     end
-    show_group_stats || panoptes_admin?
   end
 
-  def show_group_aggregate_stats
+  def show_group_aggregate_stats?
     # For types of group stats visibilities see: https://github.com/zooniverse/eras/wiki/(Panoptes)-User-Groups-Stats-Visibilities
 
     case group_stats_visibility
@@ -30,7 +31,7 @@ class QueriedUserGroupContextPolicy < ApplicationPolicy
     end
   end
 
-  def show_ind_stats_breakdown
+  def show_ind_stats_breakdown?
     case group_stats_visibility
     when 'public_show_all'
       true
