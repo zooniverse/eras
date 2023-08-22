@@ -9,11 +9,12 @@ class QueriedUserGroupContextPolicy < ApplicationPolicy
   end
 
   def show?
-    if individual_stats_breakdown_requested?
+    show_group_stats = if individual_stats_breakdown_requested?
       show_ind_stats_breakdown
     else
       show_group_aggregate_stats
     end
+    show_group_stats || panoptes_admin?
   end
 
   def show_group_aggregate_stats
@@ -43,11 +44,11 @@ class QueriedUserGroupContextPolicy < ApplicationPolicy
   end
 
   def group_member?
-    current_user_membership && !current_user_membership['roles'].empty?
+    current_user_membership && !current_user_roles.empty?
   end
 
   def group_admin?
-    current_user_membership && current_user_roles.include?('admin')
+    group_member? && current_user_roles.include?('admin')
   end
 
   def current_user_roles
