@@ -17,6 +17,8 @@ class QueriedUserGroupContextPolicy < ApplicationPolicy
   end
 
   def show_group_aggregate_stats
+    # For types of group stats visibilities see: https://github.com/zooniverse/eras/wiki/(Panoptes)-User-Groups-Stats-Visibilities
+
     case group_stats_visibility
     when 'public_show_all', 'public_agg_show_ind_if_member', 'public_agg_only'
       true
