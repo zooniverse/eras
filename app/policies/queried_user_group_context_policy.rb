@@ -49,7 +49,7 @@ class QueriedUserGroupContextPolicy < ApplicationPolicy
   end
 
   def group_admin?
-    group_member? && current_user_roles.include?('admin')
+    group_member? && current_user_roles.include?('group_admin')
   end
 
   def current_user_roles
