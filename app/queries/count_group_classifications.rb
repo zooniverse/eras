@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CountUserClassifications
+class CountGroupClassifications
   include Filterable
   include SelectableWithTimeBucket
   attr_reader :counts
@@ -11,7 +11,7 @@ class CountUserClassifications
 
   def call(params={})
     scoped = @counts
-    scoped = filter_by_user_id(scoped, params[:id])
+    scoped = filter_by_user_group_id(scoped, params[:id])
     scoped = filter_by_workflow_id(scoped, params[:workflow_id])
     scoped = filter_by_project_id(scoped, params[:project_id])
     filter_by_date_range(scoped, params[:start_date], params[:end_date])
@@ -20,28 +20,23 @@ class CountUserClassifications
   private
 
   def initial_scope(relation, params)
-    relation.select(select_clause(params)).group(group_by_clause(params)).order('period')
-  end
-
-  def group_by_clause(params)
-    params[:project_contributions] ? 'period, project_id' : 'period'
+    relation.select(select_clause(params)).group('period').order('period')
   end
 
   def select_clause(params)
     period = params[:period]
     clause = select_and_time_bucket_by(period, 'classification')
-    clause += ', SUM(total_session_time)::float AS session_time' if params[:time_spent]
-    clause += ', project_id' if params[:project_contributions]
+    clause += ', SUM(total_session_time)::float AS session_time'
     clause
   end
 
   def relation(params)
-    if params[:project_id] || params[:project_contributions]
-      UserClassificationCounts::DailyUserProjectClassificationCount
+    if params[:project_id]
+      UserGroupClassificationCounts::DailyGroupProjectClassificationCount
     elsif params[:workflow_id]
-      UserClassificationCounts::DailyUserWorkflowClassificationCount
+      UserGroupClassificationCounts::DailyGroupWorkflowClassificationCount
     else
-      UserClassificationCounts::DailyUserClassificationCount
+      UserGroupClassificationCounts::DailyGroupClassificationCount
     end
   end
 end

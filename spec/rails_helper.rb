@@ -59,6 +59,7 @@ RSpec.configure do |config|
   config.before(:suite) do
     Rake::Task['db:create_classifications_hypertable'].invoke
     Rake::Task['db:create_comments_hypertable'].invoke
+    Rake::Task['db:create_classification_user_groups_hypertable'].invoke
     Rake::Task['db:drop_continuous_aggregate_views'].invoke
     DatabaseCleaner.clean_with(:truncation)
     Rake::Task['db:create_continuous_aggregate_views'].invoke

@@ -15,6 +15,13 @@ namespace :db do
     )
   end
 
+  desc 'Create Classification User Groups Hypertable'
+  task create_classification_user_groups_hypertable: :environment do
+    ActiveRecord::Base.connection.execute(
+      "SELECT create_hypertable('classification_user_groups', 'event_time', if_not_exists => TRUE);"
+    )
+  end
+
   desc 'Create Continuous Aggregates Views'
   task create_continuous_aggregate_views: :environment do
     ActiveRecord::Base.connection.execute <<-SQL
@@ -110,6 +117,72 @@ namespace :db do
       FROM classification_events WHERE user_id IS NOT NULL
       GROUP BY day, user_id;
     SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_group_classification_count_and_time
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 day', event_time) AS day,
+      user_group_id,
+            count(*) as classification_count,
+            sum(session_time) as total_session_time
+      FROM classification_user_groups WHERE user_group_id IS NOT NULL
+      GROUP BY day, user_group_id;
+    SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_group_classification_count_and_time_per_project
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 day', event_time) AS day,
+      user_group_id, project_id,
+            count(*) as classification_count,
+            sum(session_time) as total_session_time
+      FROM classification_user_groups WHERE user_group_id IS NOT NULL
+      GROUP BY day, user_group_id, project_id;
+    SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_group_classification_count_and_time_per_workflow
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 day', event_time) AS day,
+      user_group_id, workflow_id,
+            count(*) as classification_count,
+            sum(session_time) as total_session_time
+      FROM classification_user_groups WHERE user_group_id IS NOT NULL
+      GROUP BY day, user_group_id, workflow_id;
+    SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_group_classification_count_and_time_per_user
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 day', event_time) AS day,
+      user_group_id, user_id,
+            count(*) as classification_count,
+            sum(session_time) as total_session_time
+      FROM classification_user_groups WHERE user_group_id IS NOT NULL
+      GROUP BY day, user_group_id, user_id;
+    SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_group_classification_count_and_time_per_user_per_project
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 day', event_time) AS day,
+      user_group_id, user_id, project_id,
+            count(*) as classification_count,
+            sum(session_time) as total_session_time
+      FROM classification_user_groups WHERE user_group_id IS NOT NULL
+      GROUP BY day, user_group_id, user_id, project_id;
+    SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_group_classification_count_and_time_per_user_per_workflow
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 day', event_time) AS day,
+      user_group_id, user_id, workflow_id,
+            count(*) as classification_count,
+            sum(session_time) as total_session_time
+      FROM classification_user_groups WHERE user_group_id IS NOT NULL
+      GROUP BY day, user_group_id, user_id, workflow_id;
+    SQL
   end
 
   desc 'Drop Continuous Aggregates Views'
@@ -124,6 +197,12 @@ namespace :db do
     DROP MATERIALIZED VIEW IF EXISTS daily_user_classification_count_and_time_per_workflow CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS daily_user_classification_count_and_time_per_project CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS daily_user_classification_count_and_time CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS daily_group_classification_count_and_time CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS daily_group_classification_count_and_time_per_project CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS daily_group_classification_count_and_time_per_workflow CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS daily_group_classification_count_and_time_per_user CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS daily_group_classification_count_and_time_per_user_per_project CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS daily_group_classification_count_and_time_per_user_per_workflow CASCADE;
     SQL
   end
 
