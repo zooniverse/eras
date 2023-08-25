@@ -5,7 +5,7 @@ module AuthenticationHelpers
     allow(controller).to receive(:client).and_return(user_client(user_id, is_panoptes_admin))
   end
 
-  def authenticate_with_membership!(classification_user_group, memberships,is_panoptes_admin: false)
+  def authenticate_with_membership!(classification_user_group, memberships, is_panoptes_admin: false)
     allow(controller).to receive(:client).and_return(user_client_with_membership(classification_user_group, memberships, is_panoptes_admin))
   end
 

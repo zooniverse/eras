@@ -83,6 +83,10 @@ RSpec.describe UserGroupClassificationCountController do
           end
         end
 
+        context 'querying user is not logged in' do
+          it_behaves_like 'shows group aggregate stats'
+        end
+
         context 'querying user is a group member' do
           include_context 'user_group member'
           it_behaves_like 'shows group aggregate stats'
@@ -110,6 +114,10 @@ RSpec.describe UserGroupClassificationCountController do
           it_behaves_like 'shows group aggregate stats'
         end
 
+        context 'querying user is not logged in' do
+          it_behaves_like 'shows group aggregate stats'
+        end
+
         context 'querying user is a group member' do
           include_context 'user_group member'
           it_behaves_like 'shows group aggregate stats'
@@ -134,6 +142,10 @@ RSpec.describe UserGroupClassificationCountController do
             authenticate_with_membership!(classification_user_group, [])
           }
 
+          it_behaves_like 'shows group aggregate stats'
+        end
+
+        context 'querying user is not logged in' do
           it_behaves_like 'shows group aggregate stats'
         end
 
@@ -167,6 +179,14 @@ RSpec.describe UserGroupClassificationCountController do
           end
         end
 
+        context 'querying user is not logged in' do
+          it_behaves_like 'returns 403 when authorization header is invalid' do
+            before(:each) {
+              get :query, params: { id: classification_user_group.user_group_id.to_s }
+            }
+          end
+        end
+
         context 'querying user is a group member' do
           include_context 'user_group member'
           it_behaves_like 'shows group aggregate stats'
@@ -194,6 +214,14 @@ RSpec.describe UserGroupClassificationCountController do
           it 'does not show group aggregate stats' do
             get :query, params: { id: classification_user_group.user_group_id.to_s }
             expect(response.status).to eq(403)
+          end
+        end
+
+        context 'querying user is not logged in' do
+          it_behaves_like 'returns 403 when authorization header is invalid' do
+            before(:each) {
+              get :query, params: { id: classification_user_group.user_group_id.to_s }
+            }
           end
         end
 
@@ -225,6 +253,10 @@ RSpec.describe UserGroupClassificationCountController do
           it_behaves_like 'shows group individual stats breakdown'
         end
 
+        context 'querying user is not logged in' do
+          it_behaves_like 'shows group aggregate stats'
+        end
+
         context 'querying user is a group member' do
           include_context 'user_group member'
           it_behaves_like 'shows group individual stats breakdown'
@@ -255,6 +287,14 @@ RSpec.describe UserGroupClassificationCountController do
           end
         end
 
+        context 'querying user is not logged in' do
+          it_behaves_like 'returns 403 when authorization header is invalid' do
+            before(:each) {
+              get :query, params: { id: classification_user_group.user_group_id.to_s, individual_stats_breakdown: true }
+              expect(response.status).to eq(403)            }
+          end
+        end
+
         context 'querying user is a group member' do
           include_context 'user_group member'
           it_behaves_like 'shows group individual stats breakdown'
@@ -282,6 +322,14 @@ RSpec.describe UserGroupClassificationCountController do
           it 'does not show individual stats breakdown' do
             get :query, params: { id: classification_user_group.user_group_id.to_s, individual_stats_breakdown: true }
             expect(response.status).to eq(403)
+          end
+        end
+
+        context 'querying user is not logged in' do
+          it_behaves_like 'returns 403 when authorization header is invalid' do
+            before(:each) {
+              get :query, params: { id: classification_user_group.user_group_id.to_s, individual_stats_breakdown: true }
+              expect(response.status).to eq(403)            }
           end
         end
 
@@ -318,6 +366,14 @@ RSpec.describe UserGroupClassificationCountController do
           end
         end
 
+        context 'querying user is not logged in' do
+          it_behaves_like 'returns 403 when authorization header is invalid' do
+            before(:each) {
+              get :query, params: { id: classification_user_group.user_group_id.to_s, individual_stats_breakdown: true }
+              expect(response.status).to eq(403)            }
+          end
+        end
+
         context 'querying user is a group member' do
           include_context 'user_group member'
           it_behaves_like 'shows group individual stats breakdown'
@@ -348,6 +404,14 @@ RSpec.describe UserGroupClassificationCountController do
           end
         end
 
+        context 'querying user is not logged in' do
+          it_behaves_like 'returns 403 when authorization header is invalid' do
+            before(:each) {
+              get :query, params: { id: classification_user_group.user_group_id.to_s, individual_stats_breakdown: true }
+              expect(response.status).to eq(403)            }
+          end
+        end
+
         context 'querying user is a group member' do
           include_context 'user_group member'
           it 'does not show individual stats breakdown' do
@@ -369,6 +433,8 @@ RSpec.describe UserGroupClassificationCountController do
     end
 
     context 'param validations' do
+      include_context 'user group with stats_visibility', 'public_show_all'
+
       it_behaves_like 'ensure valid query params', :query, id: 1
 
       it 'ensures you cannot query individual_stats_breakdown and any non date range param' do
