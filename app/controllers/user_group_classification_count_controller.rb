@@ -28,7 +28,7 @@ class UserGroupClassificationCountController < ApplicationController
   private
 
   def current_user_membership
-    url = "/memberships?user_id=#{current_user['id']&.to_i}&user_group_id=#{params[:id]}"
+    url = "/memberships?user_id=#{current_user['id']}&user_group_id=#{params[:id]}"
     client.panoptes.get(url)['memberships'][0]
   end
 
