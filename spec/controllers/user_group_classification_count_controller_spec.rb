@@ -291,7 +291,8 @@ RSpec.describe UserGroupClassificationCountController do
           it_behaves_like 'returns 403 when authorization header is invalid' do
             before(:each) {
               get :query, params: { id: classification_user_group.user_group_id.to_s, individual_stats_breakdown: true }
-              expect(response.status).to eq(403)            }
+              expect(response.status).to eq(403)
+            }
           end
         end
 
@@ -329,7 +330,8 @@ RSpec.describe UserGroupClassificationCountController do
           it_behaves_like 'returns 403 when authorization header is invalid' do
             before(:each) {
               get :query, params: { id: classification_user_group.user_group_id.to_s, individual_stats_breakdown: true }
-              expect(response.status).to eq(403)            }
+              expect(response.status).to eq(403)
+            }
           end
         end
 
@@ -370,7 +372,8 @@ RSpec.describe UserGroupClassificationCountController do
           it_behaves_like 'returns 403 when authorization header is invalid' do
             before(:each) {
               get :query, params: { id: classification_user_group.user_group_id.to_s, individual_stats_breakdown: true }
-              expect(response.status).to eq(403)            }
+              expect(response.status).to eq(403)
+            }
           end
         end
 
@@ -408,7 +411,8 @@ RSpec.describe UserGroupClassificationCountController do
           it_behaves_like 'returns 403 when authorization header is invalid' do
             before(:each) {
               get :query, params: { id: classification_user_group.user_group_id.to_s, individual_stats_breakdown: true }
-              expect(response.status).to eq(403)            }
+              expect(response.status).to eq(403)
+            }
           end
         end
 
