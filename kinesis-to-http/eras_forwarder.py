@@ -5,7 +5,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 HEADERS  = {"Content-Type": "application/json", "Accept": "application/json"}
-ENDPOINT = "https://eras-staging.zooniverse.org/kinesis"
+ENDPOINT = os.environ["KINESIS_STREAM_ENDPOINT"]
 
 def lambda_handler(event, context):
     payloads = [json.loads(base64.b64decode(record["kinesis"]["data"])) for record in event["Records"]]
