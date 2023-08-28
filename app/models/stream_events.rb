@@ -10,6 +10,8 @@ module StreamEvents
       StreamEvents::Comment.new(event)
     elsif classification_event?(event)
       StreamEvents::Classification.new(event)
+    else
+      StreamEvents::UnknownEvent.new
     end
   end
 
