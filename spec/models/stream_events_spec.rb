@@ -101,4 +101,18 @@ RSpec.describe StreamEvents do
       end
     end
   end
+
+  describe 'unknown event' do
+    let(:event_payload) do
+      { 'source' => 'panoptes',
+        'type' => 'workflow_counters',
+        'version' => '1.0.0',
+        'timestamp' => '2023-08-28T19:26:28Z', 'data' => {},
+        'linked' => {} }
+    end
+
+    it 'returns a StreamEvents::UnknownEvent class from payload' do
+      expect(StreamEvents.from(event_payload)).to be_a StreamEvents::UnknownEvent
+    end
+  end
 end
