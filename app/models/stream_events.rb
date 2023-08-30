@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 
 module StreamEvents
-  # 3 hour session time limit (10,800 seconds), capping at 30 mins (1800 seconds)
+  # 3 hour session time limit (10,800 seconds), capping at 3 hours (10,800 seconds)
   SESSION_LIMIT = 10_800
-  SESSION_CAP = 1800
+  SESSION_CAP = 10_800
 
   def self.from(event)
     if comment_event?(event)
       StreamEvents::Comment.new(event)
     elsif classification_event?(event)
       StreamEvents::Classification.new(event)
+    else
+      StreamEvents::UnknownEvent.new
     end
   end
 
