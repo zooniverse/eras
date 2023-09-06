@@ -14,7 +14,7 @@ RSpec.describe CountGroupProjectContributions do
   describe 'select_clause' do
     it 'selects project_id and orders by count' do
       counts = group_classifications_query.call(params)
-      expected_select_query = 'SELECT project_id, SUM(classification_count)::integer AS count FROM "daily_group_classification_count_and_time_per_project" '
+      expected_select_query = 'SELECT project_id, SUM(classification_count)::integer AS count, SUM(total_session_time)::float AS session_time FROM "daily_group_classification_count_and_time_per_project" '
       expected_select_query += 'GROUP BY "daily_group_classification_count_and_time_per_project"."project_id" ORDER BY count DESC'
       expect(counts.to_sql).to eq(expected_select_query)
     end

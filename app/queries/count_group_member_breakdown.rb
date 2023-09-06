@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CountGroupProjectContributions
+class CountGroupMemberBreakdown
   include Filterable
   attr_reader :counts
 
@@ -17,14 +17,14 @@ class CountGroupProjectContributions
   private
 
   def initial_scope(relation)
-    relation.select(select_clause).group('project_id').order('count DESC')
+    relation.select(select_clause).group('user_id, project_id')
   end
 
   def select_clause
-    'project_id, SUM(classification_count)::integer AS count, SUM(total_session_time)::float AS session_time'
+    'user_id, project_id, SUM(classification_count)::integer AS count, SUM(total_session_time)::float AS session_time'
   end
 
   def relation
-    UserGroupClassificationCounts::DailyGroupProjectClassificationCount
+    UserGroupClassificationCounts::DailyGroupUserProjectClassificationCount
   end
 end
