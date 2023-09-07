@@ -25,7 +25,6 @@ module AuthenticationHelpers
     memberships_url = "/memberships?user_id=#{classification_user_group.user_id}&user_group_id=#{classification_user_group.user_group_id}"
 
     @user_client_with_membership = double(Panoptes::Client, me: me_hash).tap do |client|
-      allow(client).to receive(:is_a?).and_return(false)
       allow(client).to receive(:is_a?).with(Panoptes::Client).and_return(true)
       allow(client).to receive_message_chain(:panoptes, :get).with(memberships_url).and_return('memberships' => memberships)
     end
@@ -44,7 +43,6 @@ module AuthenticationHelpers
     }
 
     @user_client = double(Panoptes::Client, me: me_hash).tap do |client|
-      allow(client).to receive(:is_a?).and_return(false)
       allow(client).to receive(:is_a?).with(Panoptes::Client).and_return(true)
     end
 
