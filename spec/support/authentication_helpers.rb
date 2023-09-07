@@ -10,11 +10,7 @@ module AuthenticationHelpers
   end
 
   def panoptes_application_client
-    return @panoptes_application_client if @panoptes_application_client
-
-    @panoptes_application_client = instance_double(Panoptes::Client)
-
-    @panoptes_application_client
+    @panoptes_application_client ||= instance_double(Panoptes::Client)
   end
 
   def user_client_with_membership(classification_user_group, memberships, is_panoptes_admin)
