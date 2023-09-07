@@ -3,14 +3,15 @@
 class UserGroupClassificationCountController < ApplicationController
   before_action :validate_params
   before_action :sanitize_params
-  #   before_action :require_login
+  before_action :group_require_login
 
   def query
-    # TODO: Skipping Auth for now, Will introduce this in a separate PR
-    # pundit policy for user groups, will probably look something like below:
-    # current_user['queried_user_group_id'] = params[:id]
-    # authorize :queried_user_group_context, :show?
-    skip_authorization
+    if authorization_required_for_group?
+      authorize_user_to_query_group_stats
+    else
+      skip_authorization
+    end
+
     if params[:individual_stats_breakdown]
       group_member_classification_counts = CountGroupMemberBreakdown.new.call(group_classification_count_params)
 
@@ -23,11 +24,39 @@ class UserGroupClassificationCountController < ApplicationController
       project_contributions = CountGroupProjectContributions.new.call(group_classification_count_params) unless params[:project_id] || params[:workflow_id]
       render json: UserGroupClassificationCountsSerializer.new(group_classification_counts, group_active_user_classification_counts, project_contributions),
              serializer_options: serializer_opts_from_params
-
     end
   end
 
   private
+
+  def authorize_user_to_query_group_stats
+    current_user['user_group_stats_visibility'] = group_stats_visibility
+    current_user['individual_stats_breakdown'] = params[:individual_stats_breakdown]
+    current_user['user_membership'] = current_user_membership
+    authorize :queried_user_group_context, :show?
+  end
+
+  def authorization_required_for_group?
+    (params[:individual_stats_breakdown] && group_stats_visibility != 'public_show_all') || group_stats_visibility.include?('private')
+  end
+
+  def group_require_login
+    require_login if authorization_required_for_group?
+  end
+
+  def current_user_membership
+    url = "/memberships?user_id=#{current_user['id']}&user_group_id=#{params[:id]}"
+    client.panoptes.get(url)['memberships'][0]
+  end
+
+  def queried_user_group
+    url = "/user_groups/#{params[:id]}"
+    panoptes_application_client.panoptes.get(url)['user_groups'][0]
+  end
+
+  def group_stats_visibility
+    queried_user_group['stats_visibility']
+  end
 
   def validate_params
     super

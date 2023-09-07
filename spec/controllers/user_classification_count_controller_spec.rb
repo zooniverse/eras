@@ -69,19 +69,10 @@ RSpec.describe UserClassificationCountController do
     end
 
     context 'missing token' do
-      it 'returns a 403 missing authorization header' do
-        get :query, params: { id: classification_event.user_id.to_s }
-        expected_response = { error: 'Missing Authorization header' }
-        expect(response.status).to eq(403)
-        expect(response.body).to eq(expected_response.to_json)
-      end
-
-      it 'returns a 403 missing when missing bearer token' do
-        request.headers['Authorization'] = 'asjdhaskdhsa'
-        get :query, params: { id: classification_event.user_id.to_s }
-        expected_response = { error: 'Missing Bearer token' }
-        expect(response.status).to eq(403)
-        expect(response.body).to eq(expected_response.to_json)
+      it_behaves_like 'returns 403 when authorization header is invalid' do
+        before(:each) {
+          get :query, params: { id: classification_event.user_id.to_s }
+        }
       end
     end
 
