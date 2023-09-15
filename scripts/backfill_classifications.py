@@ -1,6 +1,6 @@
 import os
 import psycopg
-import datetime
+from datetime import datetime
 
 PANOPTES_CONN = os.getenv('PANOPTES_CONN')
 PANOPTES_PORT = os.getenv('PANOPTES_PORT')
