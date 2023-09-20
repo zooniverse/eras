@@ -54,6 +54,10 @@ if len(not_in_group_yet_user_ids) > 0:
     classification_user_groups = list(map(lambda classification: (classification[0:8] + (user_group_id,)), classification_events_to_backfill))
     eras_cursor.executemany("INSERT INTO classification_user_groups (classification_id, event_time, session_time, project_id, user_id, workflow_id, created_at, updated_at, user_group_id) VALUES  (%s,%s,%s,%s,%s,%s,%s,%s,%s)", classification_user_groups)
 
+    # update classification_events' user_group_ids so that it includes new classification_id
+    classification_events_to_update = list(map(lambda classification_event: {'classification_id': classification_event[0], 'user_group_ids': ([user_group_id] if classification_event[8] is None else classification_event[8] +[user_group_id])} ,classification_events_to_backfill))
+    eras_cursor.executemany("UPDATE classification_events SET user_group_ids = %(user_group_ids)s WHERE classification_id = %(classification_id)s", classification_events_to_update)
+
     eras_conn.commit()
 
 panoptes_cursor.close()
