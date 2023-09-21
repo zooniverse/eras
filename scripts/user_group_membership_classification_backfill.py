@@ -28,10 +28,10 @@ user_group_id = args.user_group_id
 # email formats in form of comma separated string with no spaces (eg. "%a.com,%b.org%")
 email_formats = args.email_domain_formats
 
-panoptes_db_conn = psycopg.connect(f"host={PANOPTES_CONN} port={PANOPTES_PORT} dbname={PANOPTES_DB} user={PANOPTES_USER} password={PANOPTES_PW}")
+panoptes_db_conn = psycopg.connect(f"host={PANOPTES_CONN} port={PANOPTES_PORT} dbname={PANOPTES_DB} user={PANOPTES_USER} password={PANOPTES_PW} sslmode=require")
 panoptes_cursor = panoptes_db_conn.cursor()
 
-eras_conn = psycopg.connect(f"host={TIMESCALE_CONNECTION} port={TIMESCALE_PORT} dbname={ERAS_DB} user={ERAS_USER} password={ERAS_PW}")
+eras_conn = psycopg.connect(f"host={TIMESCALE_CONNECTION} port={TIMESCALE_PORT} dbname={ERAS_DB} user={ERAS_USER} password={ERAS_PW} sslmode=require")
 eras_cursor = eras_conn.cursor()
 
 # get ids of users that are not in group yet
