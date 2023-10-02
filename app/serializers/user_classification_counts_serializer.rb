@@ -38,7 +38,13 @@ class UserClassificationCountsSerializer
       end
       counts_grouped_by_period.map { |period, totals| { period: }.merge(totals) }
     else
-      user_counts
+      user_counts.map do |c|
+        period_data = {
+          period: c.period,
+          count: c.count
+        }
+        show_time_spent ? period_data.merge({ session_time: c.session_time }) : period_data
+      end
     end
   end
 

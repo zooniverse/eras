@@ -28,7 +28,7 @@ RSpec.describe UserClassificationCountController do
         expect(response_body['data'][0]['count']).to eq(1)
       end
 
-      it 'returns total_count and time_spent and breakdown of user classifications wher period is given' do
+      it 'returns total_count and time_spent and breakdown of user classifications where period is given' do
         get :query, params: { id: classification_event.user_id, period: 'day', time_spent: true }
         expect(response.status).to eq(200)
         response_body = JSON.parse(response.body)
@@ -46,6 +46,13 @@ RSpec.describe UserClassificationCountController do
         response_body = JSON.parse(response.body)
         expect(response_body['project_contributions'].length).to eq(1)
         expect(response_body['project_contributions'][0]['project_id']).to eq(classification_event.project_id)
+      end
+
+      it 'returns user project classification counts without session_time if time_spent is false' do
+        get :query, params: { id: classification_event.user_id, project_id: 1, period: 'day' }
+        expect(response.status).to eq(200)
+        response_body = JSON.parse(response.body)
+        expect(response_body['data'][0]).not_to have_key('session_time')
       end
     end
 
