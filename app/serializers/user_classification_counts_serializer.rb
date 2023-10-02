@@ -33,8 +33,8 @@ class UserClassificationCountsSerializer
     if show_project_contributions
       counts_grouped_by_period = user_counts.group_by { |user_proj_class_count| user_proj_class_count[:period] }.transform_values do |counts_in_period|
         total_in_period = { count: counts_in_period.sum(&:count) }
-        total_in_period[:session_time] = counts_in_period.sum(&:session_time) if show_time_spent
-        total_in_period
+        total_in_period_session_time = { session_time: counts_in_period.sum(&:session_time) } if show_time_spent
+        show_time_spent ? total_in_period.merge(total_in_period_session_time) : total_in_period
       end
       counts_grouped_by_period.map { |period, totals| { period: }.merge(totals) }
     else
