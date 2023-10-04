@@ -1,4 +1,4 @@
-name: Deploy Lambda Function
+name: Deploy Staging Lambda Function
 
 on:
   workflow_dispatch:
