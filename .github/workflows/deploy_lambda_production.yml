@@ -1,0 +1,37 @@
+name: Deploy Production Lambda Function
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy_lambda:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./kinesis-to-http
+    name: Deploy production lambda
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.LAMBDA_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.LAMBDA_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          role-session-name: lambda-deploy-production
+
+      - name: Install dependencies
+        run: |
+          mkdir ./package && pip install --target ./package requests
+
+      - name: Zip package
+        run: |
+          zip -r ./lambda.zip .
+
+      - name: AWS Deploy
+        run: |
+          aws lambda update-function-code \
+            --function-name eras-forwarder-production \
+            --zip-file fileb://lambda.zip
