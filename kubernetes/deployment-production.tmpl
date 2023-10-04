@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eras-production-app
+  labels:
+    app: eras-production-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eras-production-app
+  template:
+    metadata:
+      labels:
+        app: eras-production-app
+    spec:
+      containers:
+        - name: eras-production-app
+          image: ghcr.io/zooniverse/eras:__IMAGE_TAG__
+          resources:
+            requests:
+              memory: "200Mi"
+              cpu: "100m"
+            limits:
+              memory: "1000Mi"
+              cpu: "1000m"
+          startupProbe:
+            httpGet:
+              path: /
+              port: 80
+              httpHeaders:
+                 - name: X-Forwarded-Proto
+                   value: https
+            # wait 6 * 10 seconds(default periodSeconds) for the container to start
+            # after this succeeds once the liveness probe takes over
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+              httpHeaders:
+                 - name: X-Forwarded-Proto
+                   value: https
+            # allow a longer response time than 1s
+            timeoutSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+              httpHeaders:
+                 - name: X-Forwarded-Proto
+                   value: https
+            # start checking for readiness after 20s (to serve traffic)
+            initialDelaySeconds: 20
+            # allow a longer response time than 1s
+            timeoutSeconds: 10
+          env:
+            - name: RAILS_LOG_TO_STDOUT
+              value: "true"
+            - name: RAILS_ENV
+              value: production
+            - name: RAILS_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: eras-production
+                  key: rails-master-key
+          volumeMounts:
+          - mountPath: /tmp
+            name: eras-production-app-data
+      volumes:
+        - name: eras-production-app-data
+          hostPath:
+            # directory location on host node temp disk
+            path: /mnt/eras-production-app-data
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eras-production-app
+spec:
+  selector:
+    app: eras-production-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: NodePort
