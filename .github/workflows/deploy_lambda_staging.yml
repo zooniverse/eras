@@ -1,9 +1,6 @@
 name: Deploy Lambda Function
 
 on:
-  push:
-    tags:
-      - lambda-release
   workflow_dispatch:
 
 jobs:
@@ -12,7 +9,7 @@ jobs:
     defaults:
       run:
         working-directory: ./kinesis-to-http
-    name: Deploy lambda function
+    name: Deploy staging lambda
     steps:
       - name: Checkout
         uses: actions/checkout@v2
