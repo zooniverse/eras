@@ -18,7 +18,7 @@ print("TIMESCALE START COPY FROM CSV BEFORE TIME =", start_time)
 
 output_file_no = 0
 while output_file_no <= num_files:
-    with psycopg.connect(f"host={TIMESCALE_CONNECTION} port={TIMESCALE_PORT} dbname={ERAS_DB} user={ERAS_USER} password={ERAS_PW} sslmode=require") as timescale_db_conn:
+    with psycopg.connect(f"host={TIMESCALE_CONNECTION} port={TIMESCALE_PORT} dbname={ERAS_DB} user={ERAS_USER} password={ERAS_PW} sslmode=require keepalives=1 keepalives_idle=30 keepalives_interval=10 keepalives_count=20") as timescale_db_conn:
         with timescale_db_conn.cursor(name="timescale_cursor").copy("COPY classification_events FROM STDIN DELIMITER ',' CSV HEADER") as timescale_copy:
             timescale_copy.write(open(f"prod_classifications_{output_file_no}.csv").read())
     output_file_no += 1
