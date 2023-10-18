@@ -11,7 +11,7 @@ ERAS_PW = os.getenv('ERAS_PW')
 FIRST_INGESTED_CLASSIFICATION_ID = os.getenv('FIRST_INGESTED_CLASSIFICATION_ID')
 
 limit = 10000000
-num_files = math.ceil(FIRST_INGESTED_CLASSIFICATION_ID/limit)
+num_files = math.ceil(int(FIRST_INGESTED_CLASSIFICATION_ID)/limit)
 
 start_time = datetime.now()
 print("TIMESCALE START COPY FROM CSV BEFORE TIME =", start_time)

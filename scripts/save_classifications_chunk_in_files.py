@@ -17,7 +17,7 @@ classifications_query = "select id::bigint as classification_id, created_at as e
 
 offset = 0
 limit = 10000000
-num_files = math.ceil(FIRST_INGESTED_CLASSIFICATION_ID/limit)
+num_files = math.ceil(int(FIRST_INGESTED_CLASSIFICATION_ID)/limit)
 
 while offset <= num_files:
   query = ''
