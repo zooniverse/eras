@@ -29,7 +29,7 @@ while offset <= num_files:
 
   with psycopg.connect(f"host={PANOPTES_CONN} port={PANOPTES_PORT} dbname={PANOPTES_DB} user={PANOPTES_USER} password={PANOPTES_PW} sslmode=require keepalives=1 keepalives_idle=30 keepalives_interval=10 keepalives_count=20") as panoptes_db_conn:
     with open(f"prod_classifications_{offset}.csv", "wb") as f:
-        with panoptes_db_conn.cursor(name="panoptes_cursor").copy(f"COPY ({classifications_query}) TO STDOUT WITH CSV HEADER", (FIRST_INGESTED_CLASSIFICATION_ID,)) as panoptes_copy:
+        with panoptes_db_conn.cursor(name="panoptes_cursor").copy(f"COPY ({query}) TO STDOUT WITH CSV HEADER", (FIRST_INGESTED_CLASSIFICATION_ID,)) as panoptes_copy:
            for data in panoptes_copy:
              f.write(data)
     offset+= 1
