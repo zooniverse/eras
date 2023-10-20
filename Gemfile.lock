@@ -155,6 +155,7 @@ GEM
       timeout
     net-smtp (0.3.3)
       net-protocol
+    newrelic_rpm (9.5.0)
     nio4r (2.5.9)
     nokogiri (1.15.4-x86_64-darwin)
       racc (~> 1.4)
@@ -279,6 +280,7 @@ DEPENDENCIES
   database_cleaner
   debug
   factory_bot_rails
+  newrelic_rpm
   panoptes-client
   pg (~> 1.1)
   pry-byebug
