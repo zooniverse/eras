@@ -63,6 +63,13 @@ RSpec.describe KinesisStream do
           kinesis_stream.create_events([classification_payload])
         end.to change(ClassificationUserGroup, :count).from(0).to(2)
       end
+
+      it 'creates one classification_user_group per each user_group and disregards duplicates on user_group_ids' do
+        classification_payload['data']['metadata']['user_group_ids'] = [1234, 1234]
+        expect do
+          kinesis_stream.create_events([classification_payload])
+        end.to change(ClassificationUserGroup, :count).from(0).to(1)
+      end
     end
   end
 end
