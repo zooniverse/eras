@@ -15,8 +15,8 @@ class KinesisStream
       ClassificationEvent.upsert_all(@classification_events,
                                      unique_by: %i[classification_id event_time])
     end
-    # no primary key to upsert by, so we do an insert
-    ClassificationUserGroup.insert_all(@classification_user_groups.flatten) unless @classification_user_groups.empty?
+
+    ClassificationUserGroup.upsert_all(@classification_user_groups.flatten, unique_by: %i[classification_id event_time user_group_id user_id]) unless @classification_user_groups.empty?
   end
 
   def receive(payload)
@@ -38,7 +38,7 @@ class KinesisStream
 
   def add_classification_user_groups(event_data)
     user_group_ids = event_data.fetch('metadata').fetch('user_group_ids')
-    user_group_ids.each do |user_group_id|
+    user_group_ids.uniq.each do |user_group_id|
       @classification_user_groups << StreamEvents::ClassificationUserGroup.new(event_data, user_group_id).process
     end
   end
