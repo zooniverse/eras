@@ -15,6 +15,8 @@ gem 'pundit'
 gem 'rails', '~> 7.0', '>= 7.0.4.3'
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 gem 'rack-cors'
+gem 'sentry-rails'
+gem 'sentry-ruby'
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 
