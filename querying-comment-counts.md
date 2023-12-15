@@ -1,10 +1,10 @@
 ---
-title: Querying Comment Counts
+title: Comment Counts
 layout: page
 nav_order: 3
 ---
 
-## Querying Comment Counts
+# Querying Comment Counts
 
 We also allow querying comment counts without Authentication (i.e. No Authorization Header within your request).
 
@@ -31,7 +31,7 @@ With comment counts you can also filter your count query by the following parame
         * `year`
 
 
-### Example: Querying Comment Counts
+## Example: Querying Comment Counts
 
 If one was curious on how many total comments we currently have on the Zooniverse, you could query with the following:
 ```
@@ -46,7 +46,7 @@ Response will look something like this:
 
 ```
 
-### Example: Querying Comment Counts By Project With Count 	Breakdown
+## Example: Querying Comment Counts By Project With Count 	Breakdown
 
 Similar to querying classification counts, our stats API allows querying comment counts by project. The following example shows how one would query for comment counts for a specific project (eg. project with id `1234`) broken down by month.
 

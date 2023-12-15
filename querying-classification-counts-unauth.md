@@ -1,5 +1,5 @@
 ---
-title: Querying Classification Counts (Unauthenticated)
+title: Classification Counts (Without Authentication)
 layout: page
 nav_order: 2
 ---
