@@ -31,7 +31,7 @@ We allow querying classification counts without Authentication (i.e. No Authoriz
 **One caveat is that we do not allow you to query by BOTH project_id AND workflow_id (either one or the other).**
 
 
-### Example: Querying Classification Counts in total for Zooniverse
+## Example: Querying Classification Counts in total for Zooniverse
 
 If one was curious on how many total classifications we currently have on the Zooniverse, you could query the following:
 
@@ -49,7 +49,7 @@ Response will look like:
 ```
 
 
-### Example: Querying Classifications for a Specific Project
+## Example: Querying Classifications for a Specific Project
 
 If interested in querying classification count for a specific project, we can do the following:
 ```
@@ -64,7 +64,7 @@ Response will look like:
 ```
 
 
-### Example: Querying Classifications for a Specific Project With Count Breakdown
+## Example: Querying Classifications for a Specific Project With Count Breakdown
 
 If interested in querying for classification count for a specific project (for eg. project with id `1234`) and also interested in the monthly counts that make up the total count of the response, we can query the following:
 ```
@@ -123,7 +123,7 @@ Response will look like:
 ```
 
 
-### Example: Querying Classification Counts for a Specific Project With Count Breakdown Within A Certain Date Range
+## Example: Querying Classification Counts for a Specific Project With Count Breakdown Within A Certain Date Range
 
 If interested in querying for classification count for a specific project (for eg. project with id `1234`) between the days of September 18, 2023 and September 22, 2023, and also interested in the daily counts that make up the total count of the response, we can query the following:
 ```
@@ -162,7 +162,7 @@ Response:
 `2015-05-15T15:50:38Z`
 
 
-### Example: Querying Classification Counts of Multiple Projects With Count Breakdowns Within A Certain Date Range
+## Example: Querying Classification Counts of Multiple Projects With Count Breakdowns Within A Certain Date Range
 
 If interested in querying the classification counts of multiple projects (for eg. if one was the owner of projects with ID `1234` and `4321`) and were interested in total classification for both projects altogether between the days of May 05, 2015 and June 05, 2015, and also interested in the daily counts that make up the total count of the response, we can query the following:
 
