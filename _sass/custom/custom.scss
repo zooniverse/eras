@@ -1,0 +1,203 @@
+// Custom color variables
+$body-text-color-soft: rgba($body-text-color, 0.3) !default;
+$side-nav-hover: rgba(black, 0.03) !default;
+$side-nav-active: rgba(rgb(0, 0, 0), 0.07) !default;
+$table-header: $grey-lt-000 !default;
+$font-size-1: 20px;
+
+$font-size-5: 15px;
+$code-background-color: #f5f6fa;
+$code-inline-bg: $code-background-color;
+$border-color: red !default;
+
+/*
+ * RESETS
+ */
+
+// General
+body {
+	font-weight: 300;
+	font-size: $font-size-5;
+}
+.main-content {
+	line-height: 1.4;
+}
+
+*:not(.label) {
+	border-radius: 0;
+	box-shadow: none !important;
+}
+
+// Links
+a:not([class]) {
+    color: #00979D;
+}
+
+// Buttons
+.btn {
+	color: $white;
+	height: 48px;
+	line-height: 48px;
+	padding: 0 16px;
+	padding-right: 40px;
+	font-size: $font-size-5 !important;
+	font-weight: 300;
+}
+
+.btn-primary:hover {
+	background: $blue-100 !important;
+}
+
+.btn:hover {
+	color: $white;
+	background: $grey-dk-300;
+}
+
+// Navigation
+.nav-list .nav-list-item {
+	line-height: 1.6;
+}
+
+.nav-list .nav-list-item a,
+.nav-list .nav-list-item .nav-list-expander {
+	font-size: $font-size-5;
+	color: $body-text-color;
+}
+
+.nav-list .nav-list-item .nav-list-link {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}
+.nav-list .nav-list-item .nav-list-link:hover {
+	background: $side-nav-hover;
+}
+
+.nav-list .nav-list-item .nav-list-link.active {
+	background: $side-nav-active;
+	color: #00979D;
+	border-left: solid 3px #00979D
+}
+
+// Code
+:not(pre, figure) > code {
+	background: $code-inline-bg;
+	padding: 0 3px;
+	font-size: $font-size-4;
+}
+
+// Code - blocks
+// .highlight,
+// pre.highlight {
+// 	background: $code-background-color;
+// }
+pre.highlight > code {
+	background: transparent;
+}
+// figure.highlight code,
+// div.highlighter-rouge code {
+// 	background: #31343f; // From color theme syntax-one-dark-vivid — see ibm-light.scss
+// 	padding: 0;
+// }
+
+// Notes - Highlights
+p.highlight,
+blockquote.highlight {
+	color: $body-text-color;
+}
+
+// Labels
+.label {
+	padding-left: 0.8em;
+	padding-right: 0.8em;
+}
+
+// Tables
+table {
+	border-spacing: 0;
+	border: solid 1px $border-color;
+}
+
+code table {
+	border: none;
+}
+
+th {
+	background: $table-header;
+}
+
+th,
+td {
+	border-color: $border-color;
+}
+
+// Site buttons
+.icon {
+	color: $body-text-color;
+}
+
+.site-button {
+    color: #00979D;
+}
+
+.site-button:hover,
+.site-title:hover {
+	background: rgba(black, 0.03);
+}
+
+// Footer
+.site-footer {
+	color: $body-text-color-soft;
+}
+
+// Search icon
+.search-input:not(:focus) + .search-label .search-icon {
+	color: $body-text-color-soft;
+}
+
+/**
+ * Addional styles
+ */
+
+// Paragraph without gap
+p.no-gap {
+	margin-bottom: 0;
+}
+
+// Expandable blocks
+details[open] > div:nth-child(2):last-child {
+	border-left: solid 1px 00979D
+}
+details[open] > div:nth-child(2):last-child {
+	padding-left: 8px;
+}
+
+// Mini labels
+.mini-label {
+	background: orange;
+	color: white;
+	padding: 2px 5px;
+	border-radius: 2px;
+	font-size: $font-size-3;
+	text-transform: uppercase;
+	font-weight: 400;
+}
+
+// Notice block
+.notice {
+	background: moccasin;
+	border: solid 1px orange;
+	padding: 8px;
+	border-radius: 3px;
+}
+
+// Commands in the command glossary
+.cmd {
+	display: block;
+	// color: #cf2c00;
+	padding: 0.5em 0.8em;
+	border-radius: 3px;
+	margin-bottom: 0.5em;
+	background: #363636;
+	color: #eee;
+	border: none;
+}

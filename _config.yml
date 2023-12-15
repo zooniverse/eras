@@ -4,6 +4,7 @@ theme: just-the-docs
 
 aux_links:
   ERAS: https://eras.zooniverse.org
+  Repo: https://github.com/zooniverse/eras
 
 # Enable or disable the site search
 # Supports true (default) or false
