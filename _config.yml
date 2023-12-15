@@ -2,9 +2,13 @@ title: ERAS API Docs
 description: ERAS API Documentation for Zooniverse's Stats Service
 theme: just-the-docs
 
+favicon_ico: "/assets/images/favicon-teal.ico"
+
 aux_links:
   ERAS: https://eras.zooniverse.org
   Repo: https://github.com/zooniverse/eras
+
+aux_links_new_tab: true
 
 # Enable or disable the site search
 # Supports true (default) or false
