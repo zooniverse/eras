@@ -37,6 +37,7 @@ If you are familiar with our older stats service ([https://github.com/zooniverse
     * Responses of [https://eras.zooniverse.org](https://eras.zooniverse.org) will only return the total counts unless you specify a `period` you want to bucket your data by.
     * Response keys are different
         * [https://eras.zooniverse.org](https://eras.zooniverse.org) Response Example:
+
         ```
         {
             "total_count": 4123,
@@ -54,6 +55,7 @@ If you are familiar with our older stats service ([https://github.com/zooniverse
 
         ```
         * [https://stats.zooniverse.org](https://stats.zooniverse.org) Response Example:
+        
         ```
         {
             "events_over_time": {
