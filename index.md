@@ -37,5 +37,35 @@ If you are familiar with our older stats service ([https://github.com/zooniverse
     * Responses of [https://eras.zooniverse.org](https://eras.zooniverse.org) will only return the total counts unless you specify a `period` you want to bucket your data by.
     * Response keys are different
         * [https://eras.zooniverse.org](https://eras.zooniverse.org) Response Example:
+        ```
+        {
+            "total_count": 4123,
+            "data": [
+                        {
+                            "period": "2023-05-27T00:00:00Z",
+                    "count": 4000,
+                        },
+            {
+                    "period": "2023-05-28T00:00:00Z",
+                            "count": 123
+                        }
+        ]
+        }
+
+        ```
         * [https://stats.zooniverse.org](https://stats.zooniverse.org) Response Example:
+        ```
+        {
+            "events_over_time": {
+                "buckets": [
+                    {
+                        "key_as_string": "2016-06-13T00:00:00.000Z",
+                        "key":1465776000000,
+                        "doc_count":25
+                    }
+                ]
+            }
+        }
+
+        ```
 
