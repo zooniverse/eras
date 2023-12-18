@@ -154,6 +154,18 @@ td {
 	color: $body-text-color-soft;
 }
 
+.search-input:focus + .search-label .search-icon {
+    color: #00979D;
+}
+
+.search-result {
+    color: #00979D;
+}
+
+.search-result-doc .search-result-icon {
+    color: #00979D;
+}
+
 /**
  * Addional styles
  */

@@ -11,7 +11,7 @@ nav_order: 5
 
 As a new feature of our stats service, we introduce the idea of user groups so that a group of volunteers can set shared goals and celebrate milestones. Whether it’s a classroom, after school club, a group of friends, or corporate volunteering program, this new group feature provides new avenues for fostering community and collaboration for our volunteers and contributors.
 
-For more documentation on user groups within our stats service, you can view our Github repository Wiki: here (https://github.com/zooniverse/eras/wiki/API-Callout-Examples#classificationsuser_groupsid)
+For more documentation on user groups within our stats service, you can view our Github repository Wiki: here [https://github.com/zooniverse/eras/wiki/API-Callout-Examples#classificationsuser_groupsid]
 
 Our stats API allows querying for a user group’s classification stats as long as the person querying has proper authorizations to access the group statistics. _In other words, querying classification counts by user group requires an authentication token to be supplied._
 
