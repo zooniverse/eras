@@ -21,7 +21,8 @@ class KinesisStream
     ## ALSO NOTING: THIS CATCH, LOG, DEDUPE AND TRY UPSERTING AGAIN TO DB SITUATION IS TEMPORARY AND ONLY USED
     ## TO SEE WHAT THE DUPES IN THE KINESIS PAYLOAD ARE.
     ## ONE MORE NOTE: per Kinesis docs, it is VERY possible for Kinesis stream to send duplicates and
-    ## the recommendation of AWS is to appropriately handle process records. 
+    ## the recommendation of AWS is to appropriately handle process records.
+    ## SEE: https://docs.aws.amazon.com/streams/latest/dev/kinesis-record-processor-duplicates.html
 
     upsert_comments unless @comment_events.empty?
     upsert_classifications unless @classification_events.empty?
