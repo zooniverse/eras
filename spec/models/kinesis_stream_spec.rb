@@ -71,5 +71,17 @@ RSpec.describe KinesisStream do
         end.to change(ClassificationUserGroup, :count).from(0).to(1)
       end
     end
+
+    context 'payload has duplicates' do
+      it 'dedupes classification_events' do
+        kinesis_stream.create_events([classification_payload, classification_payload])
+        expect(kinesis_stream.instance_variable_get(:@classification_events).length).to eq(1)
+      end
+
+      it 'dedupes comment_events' do
+        kinesis_stream.create_events([comment_payload, comment_payload, comment_payload])
+        expect(kinesis_stream.instance_variable_get(:@comment_events).length).to eq(1)
+      end
+    end
   end
 end
