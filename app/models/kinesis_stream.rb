@@ -42,6 +42,7 @@ class KinesisStream
       level: 'warning'
     )
     Sentry.add_breadcrumb(crumb)
+    Sentry.capture_exception(e)
     if e.message.include?('ON CONFLICT DO UPDATE command cannot affect row a second time')
       @comment_events = @comment_events.uniq { |comment| comment[:comment_id] }
       retry
@@ -61,6 +62,7 @@ class KinesisStream
       level: 'warning'
     )
     Sentry.add_breadcrumb(crumb)
+    Sentry.capture_exception(e)
     if e.message.include?('ON CONFLICT DO UPDATE command cannot affect row a second time')
       @classification_events = @classification_events.uniq { |classification| classification[:classification_id] }
       retry
@@ -80,6 +82,7 @@ class KinesisStream
       level: 'warning'
     )
     Sentry.add_breadcrumb(crumb)
+    Sentry.capture_exception(e)
     if e.message.include?('ON CONFLICT DO UPDATE command cannot affect row a second time')
       @classification_user_groups = @classification_user_groups.uniq { |cug| [cug[:classification_id], cug[:user_group_id]] }
       retry
