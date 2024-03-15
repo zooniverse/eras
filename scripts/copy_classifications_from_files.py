@@ -1,3 +1,10 @@
+##
+## This script along with save_classifications_chunk_in_files.py was used in VM when first introducing ERAS.
+## We needed to backfill classifications into ERAS db.
+## The script was preluded with backfll_classifications.py which does a straight copy from panoptes db to copy to eras db.
+## See PR: https://github.com/zooniverse/eras/pull/40
+##
+
 import os
 import psycopg
 from datetime import datetime
