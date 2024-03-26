@@ -2,6 +2,7 @@
 ## This script along with copy_classifications_from_files.py was used in VM when first introducing ERAS.
 ## We needed to backfill classifications into ERAS db.
 ## The script was preluded with backfll_classifications.py which does a straight copy from panoptes db to copy to eras db.
+## There was too much data to do a straight copy from panoptes db to copy to eras db, so we had to chunk in files.
 ## See PR: https://github.com/zooniverse/eras/pull/40
 ##
 
