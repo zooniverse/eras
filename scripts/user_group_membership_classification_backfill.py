@@ -18,7 +18,7 @@ now = datetime.now()
 
 current_time = now.strftime("%H:%M:%S")
 print("BEFORE Time =", current_time)
-
+sc
 parser = argparse.ArgumentParser()
 parser.add_argument("-ug", "--user_group_id", type=int)
 parser.add_argument('email_domain_formats')
@@ -47,7 +47,7 @@ if len(not_in_group_yet_user_ids) > 0:
     panoptes_db_conn.commit()
 
     # eras get classification_events of not_in_group_yet_user_ids that does not have user_group_id within their user_group_ids classification_event
-    eras_cursor.execute("SELECT classification_id, event_time, session_time, project_id, user_id, workflow_id, created_at, updated_at, user_group_ids from classification_events WHERE user_id = ANY(%s) AND %s!=ANY(user_group_ids)", (not_in_group_yet_user_ids, user_group_id))
+    eras_cursor.execute("SELECT classification_id, event_time, session_time, project_id, user_id, workflow_id, created_at, updated_at, user_group_ids from classification_events WHERE user_id IN %s AND %s!=ANY(user_group_ids)", (not_in_group_yet_user_ids, user_group_id))
     classification_events_to_backfill = eras_cursor.fetchall()
 
     # create classification_user_group
