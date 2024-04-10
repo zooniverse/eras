@@ -43,7 +43,7 @@ class PanoptesMembershipClient
   end
 
   def memberships_insert_query(memberships_to_create)
-    # Values is part of sql query will look like ($1, $2, $3, $4), ($5, $6, $7, $8), ..etc..
+    # Values is a string that will look like ($1, $2, $3, $4), ($5, $6, $7, $8), ..etc..
     values = Array.new(memberships_to_create.length) do |i|
       "($#{(4 * i) + 1}, $#{(4 * i) + 2}, $#{(4 * i) + 3}, $#{(4 * i) + 4})"
     end.join(',')
