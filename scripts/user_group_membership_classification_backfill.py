@@ -18,7 +18,6 @@ now = datetime.now()
 
 current_time = now.strftime("%H:%M:%S")
 print("BEFORE Time =", current_time)
-sc
 parser = argparse.ArgumentParser()
 parser.add_argument("-ug", "--user_group_id", type=int)
 parser.add_argument('email_domain_formats')
