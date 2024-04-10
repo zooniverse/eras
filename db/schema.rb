@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_11_06_170457) do
+ActiveRecord::Schema[7.0].define(version: 2024_03_28_183306) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "timescaledb"
@@ -29,6 +29,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_11_06_170457) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["event_time"], name: "classification_events_event_time_idx", order: :desc
+    t.index ["user_id"], name: "index_classification_events_on_user_id"
   end
 
   create_table "classification_user_groups", primary_key: ["classification_id", "event_time", "user_group_id", "user_id"], force: :cascade do |t|
