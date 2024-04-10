@@ -44,8 +44,9 @@ class PanoptesMembershipClient
 
   def memberships_insert_query(memberships_to_create)
     # Values is part of sql query will look like ($1, $2, $3, $4), ($5, $6, $7, $8), ..etc..
-    values = memberships_to_create.length.times.map { |i| "($#{(4 * i) + 1}, $#{(4 * i) + 2}, $#{(4 * i) + 3}, $#{(4 * i) + 4})" }.join(',')
-
+    values = Array.new(memberships_to_create.length) do |i|
+      "($#{(4 * i) + 1}, $#{(4 * i) + 2}, $#{(4 * i) + 3}, $#{(4 * i) + 4})"
+    end.join(',')
     "INSERT INTO memberships (user_id, user_group_id, state, roles) VALUES #{values}"
   end
 end
