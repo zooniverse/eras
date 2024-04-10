@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'pg'
+require '../config/environment'
 
 class PanoptesMembershipClient
   def user_ids_not_in_user_group(user_group_id, domain_formats)
@@ -23,7 +24,7 @@ class PanoptesMembershipClient
   private
 
   def conn
-    @conn ||= PG.connect(ENV.fetch('PANOPTES_DB_URI'), sslmode: 'require')
+    @conn ||= PG.connect(Rails.application.credentials.panoptes_db_uri, sslmode: 'require')
   end
 
   def user_memberships(user_group_id, user_ids)

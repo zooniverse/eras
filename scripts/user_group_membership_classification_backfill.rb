@@ -4,7 +4,7 @@ require '../config/environment'
 require './panoptes_membership_client'
 require 'json'
 
-corporate_user_groups_str = ENV.fetch('CORPORATE_PARTNERS')
+corporate_user_groups_str = Rails.application.credentials.corporate_user_groups
 corporate_partners = JSON.parse(corporate_user_groups_str)
 
 puts 'Starting Classification and Membership Backfill...'
@@ -70,3 +70,5 @@ ActiveRecord::Base.connection.exec_query("CALL refresh_continuous_aggregate('dai
 
 puts 'Refreshing Daily Group Classifications Count And Time Per Workflow...'
 ActiveRecord::Base.connection.exec_query("CALL refresh_continuous_aggregate('daily_group_classification_count_and_time_per_workflow', '#{two_days_ago}', '#{today}')")
+
+puts 'Stats User Group Membership and Classification Backfill Completed'

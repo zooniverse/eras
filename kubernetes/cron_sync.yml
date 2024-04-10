@@ -1,0 +1,27 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: eras-corp-partners-cron-sync-job
+spec:
+  schedule: "0 3 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          name: eras-corp-partners-sync
+        spec:
+          containers:
+          - name: eras-corp-partners-sync
+            image: ghcr.io/zooniverse/eras
+            env:
+            - name: RAILS_LOG_TO_STDOUT
+              value: "true"
+            - name: RAILS_ENV
+              value: production
+            - name: RAILS_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: eras-production
+                  key: rails-master-key
+          restartPolicy: Never
+      backoffLimit: 2
