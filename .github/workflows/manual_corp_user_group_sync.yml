@@ -29,3 +29,4 @@ jobs:
 
     - name: Modify & apply template
       run: kubectl create -f kubernetes/manual_corp_user_group_sync.yml
+      
