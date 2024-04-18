@@ -1,3 +1,8 @@
+##
+## This script was used in VM when first introducing ERAS. We needed to backfill talk comments into ERAS db.
+## This script is a straight COPY FROM  Talk DB to COPY TO ERAS DB. 
+##
+
 import os
 import psycopg
 from datetime import datetime
