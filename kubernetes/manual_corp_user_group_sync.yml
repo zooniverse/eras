@@ -22,4 +22,4 @@ spec:
                   key: rails-master-key
         command: ['ruby', './scripts/user_group_membership_classification_backfill.rb']
       restartPolicy: Never
-    backoffLimit: 2
+  backoffLimit: 2
