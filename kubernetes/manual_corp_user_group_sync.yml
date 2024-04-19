@@ -20,6 +20,9 @@ spec:
                 secretKeyRef:
                   name: eras-production
                   key: rails-master-key
-        command: ['ruby', './scripts/user_group_membership_classification_backfill.rb']
+        command:
+        - /bin/sh
+        - -c
+        - cd scripts; ruby user_group_membership_classification_backfill.rb
       restartPolicy: Never
   backoffLimit: 2
