@@ -5,7 +5,7 @@ Zooniverse's Stats Service Measuring Volunteer Effort and Contribution.
 
 ## Full Documentation
 
-See the [Wiki](https://github.com/zooniverse/eras/wiki) for full documentation, examples, operational details and other information
+See the [Documentation Site](https://zooniverse.github.io/eras) or our [Wiki](https://github.com/zooniverse/eras/wiki) for full documentation, examples, operational details and other information
 
 ## Running App Locally With Docker
 ```
