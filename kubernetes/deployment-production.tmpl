@@ -42,7 +42,7 @@ spec:
                  - name: X-Forwarded-Proto
                    value: https
             # allow a longer response time than 1s
-            timeoutSeconds: 10
+            timeoutSeconds: 30
           readinessProbe:
             httpGet:
               path: /
@@ -53,7 +53,7 @@ spec:
             # start checking for readiness after 20s (to serve traffic)
             initialDelaySeconds: 20
             # allow a longer response time than 1s
-            timeoutSeconds: 10
+            timeoutSeconds: 30
           env:
             - name: RAILS_LOG_TO_STDOUT
               value: "true"
