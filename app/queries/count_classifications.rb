@@ -22,6 +22,15 @@ class CountClassifications
     relation.select(select_and_time_bucket_by(period, 'classification')).group('period').order('period')
   end
 
+  def end_date_includes_today?(params)
+    includes_today = true
+    if params[:end_date]
+      end_date = Date.parse(params[:end_date])
+      includes_today = end_date >= Date.today
+    end
+    return includes_today
+  end
+
   def relation(params)
     if params[:workflow_id]
       ClassificationCounts::DailyWorkflowClassificationCount
