@@ -16,8 +16,6 @@ class CountClassifications
     if params[:workflow_id].present?
       if end_date_includes_today?(params[:end_date])
         scoped_upto_yesterday = filter_by_date_range(scoped, params[:start_date], Date.yesterday.to_s)
-
-        puts scoped_upto_yesterday
         scoped = append_to_scoped(scoped_upto_yesterday, params[:workflow_id], params[:period])
       else
         scoped = filter_by_date_range(scoped, params[:start_date], params[:end_date])
