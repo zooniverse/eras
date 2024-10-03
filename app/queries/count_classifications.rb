@@ -60,7 +60,7 @@ class CountClassifications
     count_records_up_to_yesterday + todays_count
   end
 
-  def add_todays_counts_to_recent_period_counts(count_records_up_to_yesterday, todays_counts
+  def add_todays_counts_to_recent_period_counts(count_records_up_to_yesterday, todays_count)
     current_period_counts = count_records_up_to_yesterday[-1].count + todays_count[0].count
     count_records_up_to_yesterday[-1].count = current_period_counts
     count_records_up_to_yesterday
