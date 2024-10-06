@@ -35,7 +35,6 @@ class CountClassifications
   def include_today_to_scoped(scoped_upto_yesterday, workflow_id, period)
     todays_classifications = current_date_workflow_classifications(workflow_id)
     most_recent_date_from_scoped = scoped_upto_yesterday[-1].period&.to_date
-    most_recent_count = scoped_upto_yesterday[-1].count
     if is_today_part_of_recent_period?(most_recent_date_from_scoped, period)
       add_todays_counts_to_recent_period_counts(scoped_upto_yesterday, todays_classifications)
     else
@@ -46,11 +45,11 @@ class CountClassifications
   def is_today_part_of_recent_period?(most_recent_date, period)
     case period
     when 'day'
-      false
+      Date.today == most_recent_date
     when 'week'
       (Date.today - most_recent_date).to_i < 7
     when 'month'
-      Date.today.month == most_recent_date.month
+      (Date.today.month == most_recent_date.month) && (Date.today.year == most_recent_date.year)
     when 'year'
       Date.today.year == most_recent_date.year
     end
