@@ -25,10 +25,6 @@ class CountClassifications
     if params[:workflow_id].present?
       if end_date_includes_today?(params[:end_date])
         scoped_upto_yesterday = filter_by_date_range(scoped, params[:start_date], Date.yesterday.to_s)
-        puts "MDY114 LAST"
-        puts scoped_upto_yesterday
-        puts scoped_upto_yesterday.blank?
-        # puts scoped_upto_yesterday.last.period
         scoped = include_today_to_scoped(scoped_upto_yesterday, params[:workflow_id], params[:period])
       else
         scoped = filter_by_date_range(scoped, params[:start_date], params[:end_date])
@@ -47,16 +43,10 @@ class CountClassifications
 
   def include_today_to_scoped(scoped_upto_yesterday, workflow_id, period)
     todays_classifications = current_date_workflow_classifications(workflow_id)
-    puts "MDY114 TDOAYS CLASSIFICATIONS"
-    puts todays_classifications.blank?
-    # todays_classifications
     return scoped_upto_yesterday if todays_classifications.blank?
 
     if scoped_upto_yesterday.blank?
-      puts todays_classifications
-      puts "mdy114 hits here"
       # append new entry where period is start of the week
-      puts start_of_current_period(period)
       todays_classifications[0].period = start_of_current_period(period)
       return todays_classifications
     end
@@ -90,16 +80,17 @@ class CountClassifications
   end
 
   def is_today_part_of_recent_period?(most_recent_date, period)
-    case period
-    when 'day'
-      Date.today == most_recent_date
-    when 'week'
-      (Date.today - most_recent_date).to_i < 7
-    when 'month'
-      (Date.today.month == most_recent_date.month) && (Date.today.year == most_recent_date.year)
-    when 'year'
-      Date.today.year == most_recent_date.year
-    end
+    most_recent_date == start_of_current_period(period)
+    # case period
+    # when 'day'
+    #   Date.today == most_recent_date
+    # when 'week'
+    #   (Date.today - most_recent_date).to_i < 7
+    # when 'month'
+    #   (Date.today.month == most_recent_date.month) && (Date.today.year == most_recent_date.year)
+    # when 'year'
+    #   Date.today.year == most_recent_date.year
+    # end
   end
 
   def append_today_to_scoped(count_records_up_to_yesterday, todays_count)
