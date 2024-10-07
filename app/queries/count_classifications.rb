@@ -13,9 +13,22 @@ class CountClassifications
     scoped = @counts
     scoped = filter_by_workflow_id(scoped, params[:workflow_id])
     scoped = filter_by_project_id(scoped, params[:project_id])
+    # Because of how the FE, calls out to this endpoint when querying for a project's workflow's classifications count
+    # And because of our use of Real Time Aggregates
+    # Querying the DailyClassificationCountByWorkflow becomes not as performant
+
+    # Because we are limited in resources, we do the following mitigaion for ONLY querying workflow classification counts:
+    # 1. Create a New HourlyClassificationCountByWorkflow which is RealTime and Create a Data Retention for this new aggregate (this should limit the amount of data the query planner has to sift through)
+    # 2. Turn off Real Time aggreation for the DailyClassificationCount
+    # 3. For workflow classification count queries that include the current date's counts, we query current date's counts via the HourlyClassificationCountByWorkflow and query the DailyClassificationCountByWorkflow for everything before the current date's
+
     if params[:workflow_id].present?
       if end_date_includes_today?(params[:end_date])
         scoped_upto_yesterday = filter_by_date_range(scoped, params[:start_date], Date.yesterday.to_s)
+        puts "MDY114 LAST"
+        puts scoped_upto_yesterday
+        puts scoped_upto_yesterday.blank?
+        # puts scoped_upto_yesterday.last.period
         scoped = include_today_to_scoped(scoped_upto_yesterday, params[:workflow_id], params[:period])
       else
         scoped = filter_by_date_range(scoped, params[:start_date], params[:end_date])
@@ -34,11 +47,45 @@ class CountClassifications
 
   def include_today_to_scoped(scoped_upto_yesterday, workflow_id, period)
     todays_classifications = current_date_workflow_classifications(workflow_id)
-    most_recent_date_from_scoped = scoped_upto_yesterday[-1].period&.to_date
+    puts "MDY114 TDOAYS CLASSIFICATIONS"
+    puts todays_classifications.blank?
+    # todays_classifications
+    return scoped_upto_yesterday if todays_classifications.blank?
+
+    if scoped_upto_yesterday.blank?
+      puts todays_classifications
+      puts "mdy114 hits here"
+      # append new entry where period is start of the week
+      puts start_of_current_period(period)
+      todays_classifications[0].period = start_of_current_period(period)
+      return todays_classifications
+    end
+
+    most_recent_date_from_scoped = scoped_upto_yesterday[-1].period.to_date
+
+    # If period=week, month, or year, the current date could be part of that week, month or year;
+    # we check if the current date is part of the period
+    # if so, we add the count to the most recent period pulled from db
+    # if not, we append as a new entry for the current period
     if is_today_part_of_recent_period?(most_recent_date_from_scoped, period)
       add_todays_counts_to_recent_period_counts(scoped_upto_yesterday, todays_classifications)
     else
       append_today_to_scoped(scoped_upto_yesterday, todays_classifications)
+    end
+  end
+
+  def start_of_current_period(period)
+    today = Date.today
+    case period
+    when 'day'
+      today
+    when 'week'
+      # Returns Monday of current week
+      today.at_beginning_of_week
+    when 'month'
+      today.at_beginning_of_month
+    when 'year'
+      today.at_beginning_of_year
     end
   end
 
