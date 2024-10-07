@@ -94,15 +94,27 @@ RSpec.describe CountClassifications do
 
     context 'when params[:workflow_id] present' do
       context 'when params[:end_date] is before current date' do
-        it 'returns counts of events of given date range from DailyWorkflowCounts' do
-
+        it 'returns counts from DailyWorkflowClassificationCount'do
+          yesterday = Date.today - 1
+          params[:workflow_id] = diff_time_event.workflow_id.to_s
+          params[:end_date] = yesterday.to_s
+          counts = count_classifications.call(params)
+          expect(counts.model).to be(ClassificationCounts::DailyWorkflowClassificationCount)
+          expect(counts.length).to eq(1)
+          expect(counts[0].count).to eq(1)
         end
       end
 
       context 'when params[:end_date] includes current date' do
         context 'when no classification count up to previous day' do
           context 'when no classifications for current day' do
-            it 'returns from DailyWorkflowCount' do
+            it 'returns from DailyWorkflowClassificationCount' do
+              # Select a workflow id that has no classification
+              params[:workflow_id] = '100'
+              params[:end_date] = Date.today.to_s
+              counts = count_classifications.call(params)
+              expect(counts.model).to be(ClassificationCounts::DailyWorkflowClassificationCount)
+              expect(counts.length).to eq(0)
             end
           end
 
