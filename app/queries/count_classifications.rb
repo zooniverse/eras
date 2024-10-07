@@ -16,7 +16,6 @@ class CountClassifications
     # Because of how the FE, calls out to this endpoint when querying for a project's workflow's classifications count
     # And because of our use of Real Time Aggregates
     # Querying the DailyClassificationCountByWorkflow becomes not as performant
-
     # Because we are limited in resources, we do the following mitigaion for ONLY querying workflow classification counts:
     # 1. Create a New HourlyClassificationCountByWorkflow which is RealTime and Create a Data Retention for this new aggregate (this should limit the amount of data the query planner has to sift through)
     # 2. Turn off Real Time aggreation for the DailyClassificationCount
@@ -81,16 +80,6 @@ class CountClassifications
 
   def is_today_part_of_recent_period?(most_recent_date, period)
     most_recent_date == start_of_current_period(period)
-    # case period
-    # when 'day'
-    #   Date.today == most_recent_date
-    # when 'week'
-    #   (Date.today - most_recent_date).to_i < 7
-    # when 'month'
-    #   (Date.today.month == most_recent_date.month) && (Date.today.year == most_recent_date.year)
-    # when 'year'
-    #   Date.today.year == most_recent_date.year
-    # end
   end
 
   def append_today_to_scoped(count_records_up_to_yesterday, todays_count)
@@ -108,11 +97,6 @@ class CountClassifications
     current_hourly_classifications = ClassificationCounts::HourlyWorkflowClassificationCount.select("time_bucket('1 day', hour) AS period, SUM(classification_count)::integer AS count").group('period').order('period').where("hour >= '#{current_day_str}'")
     filter_by_workflow_id(current_hourly_classifications, workflow_id)
   end
-
-  # if period is day append today's result as a result
-  # if period is week/month or year first check if today is in the week or month or year
-  # if it is, add the count to the last count
-  # if it isn't add a new entry to result
 
   def end_date_includes_today?(end_date)
     includes_today = true

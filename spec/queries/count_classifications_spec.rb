@@ -91,5 +91,49 @@ RSpec.describe CountClassifications do
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(1)
     end
+
+    context 'when params[:workflow_id] present' do
+      context 'when params[:end_date] is before current date' do
+        it 'returns counts of events of given date range from DailyWorkflowCounts' do
+
+        end
+      end
+
+      context 'when params[:end_date] includes current date' do
+        context 'when no classification count up to previous day' do
+          context 'when no classifications for current day' do
+            it 'returns from DailyWorkflowCount' do
+            end
+          end
+
+          context 'when there are classifications for current day' do
+            it 'returns from HourlyWorkflowCount' do
+            end
+
+            it 'returns proper start of period' do
+            end
+          end
+        end
+
+        context 'when there are classifications up to previous day' do
+          context 'when there are no classifications for current day' do
+            it 'returns from DailyWorkflowCount (scoped up to yesterday)' do
+            end
+          end
+
+          context 'when there are classifications for current day' do
+            context 'when current day is part of the most recently pulled period' do
+              it 'adds the most recent period to the most recently pulled period counts' do
+              end
+            end
+
+            context 'when current day is not part of the most recently pulled period' do
+              it 'appends a new entry to scoped from HourlyWorkflowCount query' do
+              end
+            end
+          end
+        end
+      end
+    end
   end
 end
