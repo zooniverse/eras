@@ -89,7 +89,7 @@ RSpec.describe CountClassifications do
 
     context 'when params[:workflow_id] present' do
       context 'when params[:end_date] is before current date' do
-        it 'returns counts from DailyWorkflowClassificationCount'do
+        it 'returns counts from DailyWorkflowClassificationCount' do
           yesterday = Date.today - 1
           params[:workflow_id] = diff_time_event.workflow_id.to_s
           params[:end_date] = yesterday.to_s
@@ -149,7 +149,7 @@ RSpec.describe CountClassifications do
 
         context 'when there are classifications up to previous day' do
           context 'when there are 0 classifications for current day' do
-            let!(:classification_created_yesterday_diff_workflow) { create(:classification_created_yesterday, workflow_id: 4, classification_id: 100)}
+            let!(:classification_created_yesterday_diff_workflow) { create(:classification_created_yesterday, workflow_id: 4, classification_id: 100) }
             it 'returns from DailyWorkflowCount (scoped up to yesterday)' do
               params[:workflow_id] = classification_created_yesterday_diff_workflow.workflow_id.to_s
               expect(counts.model).to be(ClassificationCounts::DailyWorkflowClassificationCount)
@@ -160,7 +160,7 @@ RSpec.describe CountClassifications do
 
           context 'when there are classifications for current day' do
             before do
-              allow(Date).to receive(:today).and_return Date.new(2022,10,21)
+              allow(Date).to receive(:today).and_return Date.new(2022, 10, 21)
               params[:workflow_id] = diff_workflow_event.workflow_id.to_s
               params[:period] = 'year'
             end
