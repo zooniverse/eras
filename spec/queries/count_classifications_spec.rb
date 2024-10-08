@@ -167,7 +167,7 @@ RSpec.describe CountClassifications do
 
             context 'when current day is part of the most recently pulled period' do
               it 'adds the most recent period to the most recently pulled period counts' do
-                create(:classification_with_diff_workflow, classification_id: 1000, event_time: Date.new(2022,01,02))
+                create(:classification_with_diff_workflow, classification_id: 1000, event_time: Date.new(2022, 1, 2))
                 expect(counts.length).to eq(1)
                 expect(counts[0].count).to eq(2)
                 expect(counts[0].period).to eq(Date.today.at_beginning_of_year)
@@ -176,7 +176,7 @@ RSpec.describe CountClassifications do
 
             context 'when current day is not part of the most recently pulled period' do
               it 'appends a new entry to scoped from HourlyWorkflowCount query' do
-                create(:classification_with_diff_workflow, classification_id: 1000, event_time: Date.new(2021,01,02))
+                create(:classification_with_diff_workflow, classification_id: 1000, event_time: Date.new(2021, 1, 2))
                 expect(counts.length).to eq(2)
                 counts.each { |c| expect(c.count).to eq(1) }
                 expect(counts[0].class).to be(ClassificationCounts::DailyWorkflowClassificationCount)

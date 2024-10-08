@@ -57,7 +57,7 @@ class CountClassifications
     # we check if the current date is part of the period
     # if so, we add the count to the most recent period pulled from db
     # if not, we append as a new entry for the current period
-    if is_today_part_of_recent_period?(most_recent_date_from_scoped, period)
+    if today_part_of_recent_period?(most_recent_date_from_scoped, period)
       add_todays_counts_to_recent_period_counts(scoped_upto_yesterday, todays_classifications)
     else
       todays_classifications[0].period = start_of_current_period(period).to_time.utc
@@ -80,7 +80,7 @@ class CountClassifications
     end
   end
 
-  def is_today_part_of_recent_period?(most_recent_date, period)
+  def today_part_of_recent_period?(most_recent_date, period)
     most_recent_date == start_of_current_period(period)
   end
 
