@@ -6,7 +6,7 @@ class CreateHourlyWorkflowClassificationCount < ActiveRecord::Migration[7.0]
   # We plan to do the following:
   # - Update the daily_classification_count_per_workflow to be materialized only (i.e. non-realtime)
   # - Create a subsequent realtime cagg that buckets hourly that we will create data retention policies for. The plan is for up to 72 hours worth of hourly workflow classification counts of data.
-  # - Update workflow query to first query the daily counts first and the query the hourly counts for just the specific date of NOw.
+  # - Update workflow query to first query the daily counts first and the query the hourly counts for just the specific date of now.
   disable_ddl_transaction!
   def change
     execute <<~SQL
