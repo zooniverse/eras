@@ -35,7 +35,7 @@ namespace :db do
 
     ActiveRecord::Base.connection.execute <<-SQL
       CREATE MATERIALIZED VIEW IF NOT EXISTS daily_classification_count_per_workflow
-      WITH (timescaledb.continuous, timescaledb.materialized_only) AS
+      WITH (timescaledb.continuous) AS
       SELECT time_bucket('1 day', event_time) AS day,
       workflow_id,
             count(*) as classification_count
