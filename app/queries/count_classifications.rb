@@ -46,7 +46,7 @@ class CountClassifications
 
     if scoped_upto_yesterday.blank?
       # append new entry where period is start of the week
-      todays_classifications[0].period = start_of_current_period(period)
+      todays_classifications[0].period = start_of_current_period(period)&.to_time&.utc
       return todays_classifications
     end
 

@@ -22,15 +22,14 @@ RSpec.describe CountClassifications do
   end
 
   describe 'select_and_time_bucket_by' do
+    let(:counts) { count_classifications.call(params) }
     it 'buckets counts by year by default' do
-      counts = count_classifications.call(params)
       expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count FROM \"daily_classification_count\" GROUP BY period ORDER BY period"
       expect(counts.to_sql).to eq(expected_select_query)
     end
 
     it 'buckets counts by given period' do
       params[:period] = 'week'
-      counts = count_classifications.call(params)
       expected_select_query = "SELECT time_bucket('1 week', day) AS period, SUM(classification_count)::integer AS count FROM \"daily_classification_count\" GROUP BY period ORDER BY period"
       expect(counts.to_sql).to eq(expected_select_query)
     end
@@ -41,13 +40,13 @@ RSpec.describe CountClassifications do
     let!(:diff_workflow_event) { create(:classification_with_diff_workflow) }
     let!(:diff_project_event) { create(:classification_with_diff_project) }
     let!(:diff_time_event) { create(:classification_created_yesterday) }
+    let(:counts) { count_classifications.call(params) }
 
     it_behaves_like 'is filterable by workflow'
     it_behaves_like 'is filterable by project'
     it_behaves_like 'is filterable by date range'
 
     it 'returns counts of all events when no params given' do
-      counts = count_classifications.call(params)
       # because default is bucket by year and all data created in the same year, we expect counts to look something like
       # [<ClassificationCounts::DailyClassificationCount period: 01-01-2023, count: 4>]
       current_year = Date.today.year
@@ -58,7 +57,6 @@ RSpec.describe CountClassifications do
 
     it 'returns counts bucketed by given period' do
       params[:period] = 'day'
-      counts = count_classifications.call(params)
       expect(counts.length).to eq(2)
       expect(counts[0].count).to eq(1)
       expect(counts[0].period).to eq((Date.today - 1).to_s)
@@ -69,7 +67,6 @@ RSpec.describe CountClassifications do
     it 'returns counts of events with given workflow' do
       workflow_id = diff_workflow_event.workflow_id
       params[:workflow_id] = workflow_id.to_s
-      counts = count_classifications.call(params)
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(1)
     end
@@ -77,7 +74,6 @@ RSpec.describe CountClassifications do
     it 'returns counts of events with given project' do
       project_id = diff_project_event.project_id
       params[:project_id] = project_id.to_s
-      counts = count_classifications.call(params)
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(1)
     end
@@ -87,7 +83,6 @@ RSpec.describe CountClassifications do
       yesterday = Date.today - 1
       params[:start_date] = last_week.to_s
       params[:end_date] = yesterday.to_s
-      counts = count_classifications.call(params)
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(1)
     end
@@ -98,7 +93,6 @@ RSpec.describe CountClassifications do
           yesterday = Date.today - 1
           params[:workflow_id] = diff_time_event.workflow_id.to_s
           params[:end_date] = yesterday.to_s
-          counts = count_classifications.call(params)
           expect(counts.model).to be(ClassificationCounts::DailyWorkflowClassificationCount)
           expect(counts.length).to eq(1)
           expect(counts[0].count).to eq(1)
@@ -106,23 +100,49 @@ RSpec.describe CountClassifications do
       end
 
       context 'when params[:end_date] includes current date' do
-        context 'when no classification count up to previous day' do
-          context 'when no classifications for current day' do
+        before do
+          params[:end_date] = Date.today.to_s
+        end
+
+        context 'when 0 classifications up to previous day' do
+          context 'when 0 classifications for current day' do
             it 'returns from DailyWorkflowClassificationCount' do
               # Select a workflow id that has no classification
               params[:workflow_id] = '100'
-              params[:end_date] = Date.today.to_s
-              counts = count_classifications.call(params)
               expect(counts.model).to be(ClassificationCounts::DailyWorkflowClassificationCount)
               expect(counts.length).to eq(0)
             end
           end
 
           context 'when there are classifications for current day' do
-            it 'returns from HourlyWorkflowCount' do
+            before do
+              params[:workflow_id] = diff_workflow_event.workflow_id.to_s
             end
 
-            it 'returns proper start of period' do
+            it "returns today's classifications from HourlyWorkflowClassificationCount" do
+              expect(counts.model).to be(ClassificationCounts::HourlyWorkflowClassificationCount)
+              expect(counts.length).to eq(1)
+              expect(counts[0].count).to eq(1)
+            end
+
+            it 'returns current date when period is day' do
+              params[:period] = 'day'
+              expect(counts[0].period).to eq(Date.today.to_time.utc)
+            end
+
+            it 'returns start of week when period is week' do
+              params[:period] = 'week'
+              expect(counts[0].period).to eq(Date.today.at_beginning_of_week.to_time.utc)
+            end
+
+            it 'returns start of month when period is month' do
+              params[:period] = 'month'
+              expect(counts[0].period).to eq(Date.today.at_beginning_of_month.to_time.utc)
+            end
+
+            it 'returns start of year when period is year' do
+              params[:period] = 'year'
+              expect(counts[0].period).to eq(Date.today.at_beginning_of_year.to_time.utc)
             end
           end
         end
