@@ -166,7 +166,7 @@ RSpec.describe CountClassifications do
             end
 
             context 'when current day is part of the most recently pulled period' do
-              it 'adds the most recent period to the most recently pulled period counts' do
+              it 'adds the current day counts to the most recently pulled period counts' do
                 create(:classification_with_diff_workflow, classification_id: 1000, event_time: Date.new(2022, 1, 2))
                 expect(counts.length).to eq(1)
                 # the 2 classifications counted is the one created in L170 as well as diff_workflow_event classification.
