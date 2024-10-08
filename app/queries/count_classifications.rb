@@ -31,7 +31,7 @@ class CountClassifications
     else
       scoped = filter_by_date_range(scoped, params[:start_date], params[:end_date])
     end
-    return scoped
+    scoped
   end
 
   private
@@ -103,7 +103,7 @@ class CountClassifications
   def end_date_includes_today?(end_date)
     includes_today = true
     includes_today = Date.parse(end_date) >= Date.today if end_date.present?
-    return includes_today
+    includes_today
   end
 
   def relation(params)
