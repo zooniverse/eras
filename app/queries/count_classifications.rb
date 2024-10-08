@@ -41,12 +41,13 @@ class CountClassifications
   end
 
   def include_today_to_scoped(scoped_upto_yesterday, workflow_id, period)
+    period = 'year' if period.nil?
     todays_classifications = current_date_workflow_classifications(workflow_id)
     return scoped_upto_yesterday if todays_classifications.blank?
 
     if scoped_upto_yesterday.blank?
-      # append new entry where period is start of the week
-      todays_classifications[0].period = start_of_current_period(period)&.to_time&.utc
+      # append new entry where period is start of the period
+      todays_classifications[0].period = start_of_current_period(period).to_time.utc
       return todays_classifications
     end
 
@@ -59,6 +60,7 @@ class CountClassifications
     if is_today_part_of_recent_period?(most_recent_date_from_scoped, period)
       add_todays_counts_to_recent_period_counts(scoped_upto_yesterday, todays_classifications)
     else
+      todays_classifications[0].period = start_of_current_period(period).to_time.utc
       append_today_to_scoped(scoped_upto_yesterday, todays_classifications)
     end
   end

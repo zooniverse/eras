@@ -148,19 +148,40 @@ RSpec.describe CountClassifications do
         end
 
         context 'when there are classifications up to previous day' do
-          context 'when there are no classifications for current day' do
+          context 'when there are 0 classifications for current day' do
+            let!(:classification_created_yesterday_diff_workflow) { create(:classification_created_yesterday, workflow_id: 4, classification_id: 100)}
             it 'returns from DailyWorkflowCount (scoped up to yesterday)' do
+              params[:workflow_id] = classification_created_yesterday_diff_workflow.workflow_id.to_s
+              expect(counts.model).to be(ClassificationCounts::DailyWorkflowClassificationCount)
+              expect(counts.length).to eq(1)
+              expect(counts[0].count).to eq(1)
             end
           end
 
           context 'when there are classifications for current day' do
+            before do
+              allow(Date).to receive(:today).and_return Date.new(2022,10,21)
+              params[:workflow_id] = diff_workflow_event.workflow_id.to_s
+              params[:period] = 'year'
+            end
+
             context 'when current day is part of the most recently pulled period' do
               it 'adds the most recent period to the most recently pulled period counts' do
+                create(:classification_with_diff_workflow, classification_id: 1000, event_time: Date.new(2022,01,02))
+                expect(counts.length).to eq(1)
+                expect(counts[0].count).to eq(2)
+                expect(counts[0].period).to eq(Date.today.at_beginning_of_year)
               end
             end
 
             context 'when current day is not part of the most recently pulled period' do
               it 'appends a new entry to scoped from HourlyWorkflowCount query' do
+                create(:classification_with_diff_workflow, classification_id: 1000, event_time: Date.new(2021,01,02))
+                expect(counts.length).to eq(2)
+                counts.each { |c| expect(c.count).to eq(1) }
+                expect(counts[0].class).to be(ClassificationCounts::DailyWorkflowClassificationCount)
+                expect(counts[1].class).to be(ClassificationCounts::HourlyWorkflowClassificationCount)
+                expect(counts.last.period).to eq(Date.today.at_beginning_of_year)
               end
             end
           end
