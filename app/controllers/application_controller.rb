@@ -78,7 +78,8 @@ class ApplicationController < ActionController::API
   end
 
   def validate_period
-    raise ValidationError, 'Invalid bucket option. Valid options for period is day, week, month, or year' unless SelectableWithTimeBucket::TIME_BUCKET_OPTIONS.keys.include? params[:period].downcase.to_sym
+    params[:period] = params[:period].downcase
+    raise ValidationError, 'Invalid bucket option. Valid options for period is day, week, month, or year' unless SelectableWithTimeBucket::TIME_BUCKET_OPTIONS.keys.include? params[:period].to_sym
   end
 
   def valid_date_range

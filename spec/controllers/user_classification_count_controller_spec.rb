@@ -92,6 +92,7 @@ RSpec.describe UserClassificationCountController do
     end
 
     context 'param validations' do
+      before(:each) { authenticate!(is_panoptes_admin: true) }
       it_behaves_like 'ensure valid query params', :query, id: 1
 
       it 'ensures you cannot query by workflow and project_contributions' do
