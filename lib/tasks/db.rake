@@ -183,6 +183,16 @@ namespace :db do
       FROM classification_user_groups WHERE user_group_id IS NOT NULL
       GROUP BY day, user_group_id, user_id, workflow_id;
     SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS hourly_classification_count_per_workflow
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 hour', event_time) AS hour,
+      workflow_id,
+            count(*) as classification_count
+      FROM classification_events
+      GROUP BY hour, workflow_id;
+    SQL
   end
 
   desc 'Drop Continuous Aggregates Views'
@@ -203,6 +213,7 @@ namespace :db do
     DROP MATERIALIZED VIEW IF EXISTS daily_group_classification_count_and_time_per_user CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS daily_group_classification_count_and_time_per_user_per_project CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS daily_group_classification_count_and_time_per_user_per_workflow CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS hourly_classification_count_per_workflow CASCADE;
     SQL
   end
 
