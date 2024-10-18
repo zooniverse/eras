@@ -80,7 +80,7 @@ RSpec.describe UserClassificationCountsSerializer do
 
       it 'shows project_contributions ordered by recents when order_proj_contribution_by is recents' do
         classification_count_diff_project_created_yesterday = build(:user_diff_proj_classification_count, period: Date.today - 1)
-        serializer = described_class.new([classification_count_diff_project_created_yesterday,user_classification_count])
+        serializer = described_class.new([classification_count_diff_project_created_yesterday, user_classification_count])
         serialized = serializer.as_json(serializer_options: { project_contributions: true, order_project_contributions_by: 'recents' })
         expect(serialized[:project_contributions].length).to eq(2)
         expect(serialized[:project_contributions][0][:project_id]).to eq(user_classification_count.project_id)

@@ -38,8 +38,7 @@ class UserClassificationCountController < ApplicationController
     { period: params[:period],
       time_spent: params[:time_spent],
       project_contributions: params[:project_contributions],
-      order_project_contributions_by: params[:order_project_contributions_by]
-     }
+      order_project_contributions_by: params[:order_project_contributions_by] }
   end
 
   def user_classification_count_params
