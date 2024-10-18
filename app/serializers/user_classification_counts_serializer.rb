@@ -11,15 +11,21 @@ class UserClassificationCountsSerializer
     serializer_options = options[:serializer_options]
     show_time_spent = serializer_options[:time_spent]
     show_project_contributions = serializer_options[:project_contributions]
+    order_project_contributions_by = serializer_options[:order_project_contributions_by]
+
     total_count = user_classification_counts.sum(&:count).to_i
     response = { total_count: }
     calculate_time_spent(user_classification_counts, response) if show_time_spent
-    response[:project_contributions] = project_contributions if show_project_contributions
+    response[:project_contributions] = project_contributions(order_project_contributions_by) if show_project_contributions
     response[:data] = response_data(user_classification_counts, show_project_contributions:, show_time_spent:) if serializer_options[:period]
     response
   end
 
   private
+
+  def order_project_contributions_by_recents?(order_project_contributions_by)
+    order_project_contributions_by && order_project_contributions_by.downcase == 'recents'
+  end
 
   def calculate_time_spent(counts, response)
     total_time_spent = counts.sum(&:session_time).to_f
@@ -48,10 +54,19 @@ class UserClassificationCountsSerializer
     end
   end
 
-  def project_contributions
+  def project_contributions(order_by)
     project_contributions = @user_classification_counts.group_by(&:project_id).transform_values do |counts|
       counts.sum(&:count)
     end
-    project_contributions.map { |project_id, count| { project_id:, count: } }.sort_by { |proj_contribution| proj_contribution[:count] }.reverse
+
+    if order_project_contributions_by_recents?(order_by)
+      period_to_contributed_project_ids = @user_classification_counts.sort_by(&:period).reverse.group_by(&:period).transform_values do |uccs|
+        uccs.map(&:project_id)
+      end
+      recently_contributed_project_ids = period_to_contributed_project_ids.values.flatten.uniq
+      recently_contributed_project_ids.map { |project_id| { project_id: , count: project_contributions[project_id] } }
+    else
+      project_contributions.map { |project_id, count| { project_id:, count: } }.sort_by { |proj_contribution| proj_contribution[:count] }.reverse
+    end
   end
 end
