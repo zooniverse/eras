@@ -60,7 +60,7 @@ class UserClassificationCountsSerializer
     end
 
     if order_project_contributions_by_recents?(order_by)
-      period_to_contributed_project_ids = @user_classification_counts.sort_by { |ucc| ucc.period }.reverse.group_by(&:period).transform_values do |uccs|
+      period_to_contributed_project_ids = @user_classification_counts.sort_by(&:period).reverse.group_by(&:period).transform_values do |uccs|
         uccs.map { |ucc| ucc.project_id}
       end
       recently_contributed_project_ids = period_to_contributed_project_ids.values.flatten.uniq
