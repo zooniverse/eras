@@ -59,7 +59,7 @@ RSpec.describe UserClassificationCountsSerializer do
     let(:user_diff_period_classification_count) { build(:user_diff_period_classification_count) }
     let(:serializer) { described_class.new([user_diff_period_classification_count, user_classification_count, user_diff_proj_count]) }
 
-    it 'shows project_contributions ordered desc by count' do
+    it 'shows project_contributions ordered desc by count when order_proj_contribution_by by not given' do
       serialized = serializer.as_json(serializer_options: { project_contributions: true })
       expect(serialized[:project_contributions].length).to eq(2)
       expect(serialized[:project_contributions][0][:project_id]).to eq(user_classification_count.project_id)
@@ -68,7 +68,29 @@ RSpec.describe UserClassificationCountsSerializer do
       expect(serialized[:project_contributions][1][:count]).to eq(user_diff_proj_count.count)
     end
 
-    it 'shows response data bucketed by period when querying top_projects' do
+    context 'when order_project_contributions_by param is given' do
+      it 'shows project_contributions ordered desc by count when order_proj_contribution_by is count' do
+        serialized = serializer.as_json(serializer_options: { project_contributions: true, order_project_contributions_by: 'count' })
+        expect(serialized[:project_contributions].length).to eq(2)
+        expect(serialized[:project_contributions][0][:project_id]).to eq(user_classification_count.project_id)
+        expect(serialized[:project_contributions][0][:count]).to eq(user_classification_count.count + user_diff_period_classification_count.count)
+        expect(serialized[:project_contributions][1][:project_id]).to eq(user_diff_proj_count.project_id)
+        expect(serialized[:project_contributions][1][:count]).to eq(user_diff_proj_count.count)
+      end
+
+      it 'shows project_contributions ordered by recents when order_proj_contribution_by is recents' do
+        classification_count_diff_project_created_yesterday = build(:user_diff_proj_classification_count, period: Date.today - 1)
+        serializer = described_class.new([classification_count_diff_project_created_yesterday,user_classification_count])
+        serialized = serializer.as_json(serializer_options: { project_contributions: true, order_project_contributions_by: 'recents' })
+        expect(serialized[:project_contributions].length).to eq(2)
+        expect(serialized[:project_contributions][0][:project_id]).to eq(user_classification_count.project_id)
+        expect(serialized[:project_contributions][0][:count]).to eq(user_classification_count.count)
+        expect(serialized[:project_contributions][1][:project_id]).to eq(classification_count_diff_project_created_yesterday.project_id)
+        expect(serialized[:project_contributions][1][:count]).to eq(classification_count_diff_project_created_yesterday.count)
+      end
+    end
+
+    it 'shows response data bucketed by period when querying project_contributions by count' do
       serialized = serializer.as_json(serializer_options: { project_contributions: true, period: 'day' })
       expect(serialized[:data].length).to eq(2)
       expect(serialized[:data][0][:period]).to eq(user_diff_period_classification_count.period)

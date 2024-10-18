@@ -126,6 +126,24 @@ RSpec.describe UserClassificationCountController do
         get :query, params: { id: 1, time_spent: 'true' }
         expect(controller.params[:time_spent]).to eq(true)
       end
+
+      context 'order_project_contributions validations' do
+        it 'errors if not a valid order_project_contributions_by option' do
+          get :query, params: { id: 1, order_project_contributions_by: 'blank' }
+          expect(response.status).to eq(400)
+          expect(response.body).to include('Can only order project contributions by recents or count')
+        end
+
+        it 'allows allowable order_project_contributions_by option' do
+          get :query, params: { id: 1, order_project_contributions_by: 'recents' }
+          expect(response.status).to eq(200)
+        end
+
+        it 'allows order_project_contributions_by to be case-insensitive' do
+          get :query, params: { id: 1, order_project_contributions_by: 'COUNT' }
+          expect(response.status).to eq(200)
+        end
+      end
     end
   end
 end
