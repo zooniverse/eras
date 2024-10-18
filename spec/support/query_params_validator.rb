@@ -18,6 +18,12 @@ RSpec.shared_examples 'ensure valid query params' do |query, initial_params={}|
     expect(response.body).to include('Invalid bucket option. Valid options for period is day, week, month, or year')
   end
 
+  it 'allows period param to be case-insensitive' do
+    params[:period] = 'MONTH'
+    get query, params: params
+    expect(response.status).to eq(200)
+  end
+
   it 'ensures that we do not query by both workflow and project' do
     params[:workflow_id] = 1
     params[:project_id] = 2
