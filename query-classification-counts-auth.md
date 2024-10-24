@@ -70,11 +70,20 @@ You can query personal classification counts filtering by any of the following:
     * Boolean that dictates whether your response will display all your project contributions broken down.
         * This list is ordered by top contributing projects, by classification count
         * This list does not include any time and efforts you may have spent on Talk
+* Order_project_contributions_by (Recents/Count)
+    * Takes either 'recents' or 'count'. Defaults to 'count'
+    * Dictates whether your response's project_contributions will display project contributions ordered by count or by most recently contributed.
+    * Note that if you order by 'recents', it is RECOMMENDED to set `period=day` as a parameter to your request. This will give you most recent project.
+        * This is due to our queries utilizing a binning function [https://docs.timescale.com/api/latest/hyperfunctions/time_bucket/] to query data.
+        * When setting your `period` time bucket to a bigger time bucket (week, month, or the default of year), the ordering of your most recents may not be consistent on your time bucket.
+            * As an example, if you classified to a project with id `1` on Wednesday if this week and contributed to a different project with id `2` the following day on Thursday, if we set `period=week&order_project_contributions_by=recents`, both projects will show up in the response's `project_contributions`, but the ordering not be consistent, sometimes project with id `2` will show up first and sometimes project with id `1` will show up first.
+               * HOWEVER, within this same example, say you classified to a third project with id `3` the week prior (and did not classify on the third project on the current week) the ordering of `project_contributions` will vary between projects with id `1` or `2` coming first but project with id `3` will always come after that.
+
 
 **CAVEATS**
 
 
-
+* **Note that if you order by 'recents', it is RECOMMENDED to set `period=day` as a parameter to your request. This will give you most recent project.**
 * **We do not allow you to query by BOTH project_id AND workflow_id (either one or the other)**
 * **We do not allow you to query by both `project_id`/`workflow_id` when `?project_contributions=true`.**
 
