@@ -51,8 +51,19 @@ RSpec.describe StreamEvents do
       expect(StreamEvents.started_at(event_data)).to be_nil
     end
 
+    it 'returns started_at to nil if started_at cannot be parsed' do
+      # set started_at to some unparseable time string
+      event_metadata['started_at'] = '-1 OR 2+742-742-1=0+0+0+1 --'
+      expect(StreamEvents.started_at(event_data)).to be_nil
+    end
+
     it 'returns finished_at to nil if no finished_at in metadata' do
       event_metadata.delete('finished_at')
+      expect(StreamEvents.finished_at(event_data)).to be_nil
+    end
+
+    it 'returns finished_at to nil if started_at cannot be parsed' do
+      event_metadata['finished_at'] = '-1 OR 2+742-742-1=0+0+0+1 --'
       expect(StreamEvents.finished_at(event_data)).to be_nil
     end
 

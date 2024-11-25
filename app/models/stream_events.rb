@@ -30,12 +30,12 @@ module StreamEvents
 
   def self.started_at(event_data)
     started_at = event_data.fetch('metadata')&.fetch('started_at', nil)
-    Time.parse(started_at) if started_at
+    Time.parse(started_at) rescue nil if started_at
   end
 
   def self.finished_at(event_data)
     finished_at = event_data.fetch('metadata')&.fetch('finished_at', nil)
-    Time.parse(finished_at) if finished_at
+    Time.parse(finished_at) rescue nil if finished_at
   end
 
   def self.session_time(event_data)
