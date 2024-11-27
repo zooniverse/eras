@@ -23,6 +23,7 @@ RSpec.describe StreamEvents::Classification do
       expect(prepared_payload[:user_id]).to eq(links.fetch('user'))
       expect(prepared_payload[:user_group_ids]).to eq(data.fetch('metadata').fetch('user_group_ids'))
       expect(prepared_payload[:session_time]).to eq(StreamEvents.session_time(data))
+      expect(prepared_payload[:already_seen]).to eq(StreamEvents.already_seen(data))
     end
 
     it 'sets the user_id to nil if no user in stream payload' do

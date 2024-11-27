@@ -111,6 +111,23 @@ RSpec.describe StreamEvents do
         expect(StreamEvents.session_time(event_data)).to be_zero
       end
     end
+
+    context 'already_seen' do
+      it 'returns already_seen from payload if provided' do
+        expected_already_seen = event_metadata['subject_selection_state']['already_seen']
+        expect(StreamEvents.already_seen(event_data)).to eq(expected_already_seen)
+      end
+
+      it 'returns nil if subject_selection_state is not provided' do
+        event_metadata.delete('subject_selection_state')
+        expect(StreamEvents.already_seen(event_data)).to eq(nil)
+      end
+
+      it 'returns nil if subject_selection_state does not have already_seen' do
+        event_metadata['subject_selection_state'] = {}
+        expect(StreamEvents.already_seen(event_data)).to eq(nil)
+      end
+    end
   end
 
   describe 'unknown event' do
