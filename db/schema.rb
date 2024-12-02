@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_09_26_233924) do
+ActiveRecord::Schema[7.0].define(version: 2024_11_27_220919) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "timescaledb"
@@ -28,6 +28,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_09_26_233924) do
     t.float "session_time"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "already_seen"
     t.index ["event_time"], name: "classification_events_event_time_idx", order: :desc
     t.index ["user_id"], name: "index_classification_events_on_user_id"
   end

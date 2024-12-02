@@ -46,4 +46,8 @@ module StreamEvents
     diff = SESSION_CAP if diff > SESSION_LIMIT
     diff
   end
+
+  def self.already_seen(event_data)
+    event_data.fetch('metadata')&.fetch('subject_selection_state', nil)&.fetch('already_seen', nil)
+  end
 end
