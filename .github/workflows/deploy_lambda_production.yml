@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          mkdir ./package && pip install --target ./package requests
+          mkdir ./python && pip install --target ./python requests
 
       - name: Zip package
         run: |
