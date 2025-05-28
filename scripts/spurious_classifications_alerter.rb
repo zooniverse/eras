@@ -3,8 +3,9 @@
 require '../config/environment'
 require 'json'
 
-# if project's classification_rate (difference in classifications / days apart) is higher than 5000 classifications per day, we flag as potential project with spurious classifications
+# if project's classification_rate (difference in classifications / days apart) is higher than 5000 classifications per day and percentage difference is over 50% then we flag as potential project with spurious classifications
 PROJECT_SPURIOUS_CLASSIFICATION_RATE_LOWER_BOUND = 5_000
+PERCENTAGE_DIFF_THRESHOLD = 50
 
 puts 'Querying diffs to flag potential affected projects...'
 projects_weekly_classifications_history = ActiveRecord::Base.connection.exec_query("SELECT
@@ -23,12 +24,20 @@ INNER JOIN
 WHERE
     record1.classification_count IS NOT NULL AND record2.classification_count IS NOT NULL and record1.day < record2.day and record1.day >= (CURRENT_DATE - INTERVAL '7 days') and record2.day >= CURRENT_DATE - INTERVAL '2 days' and record2.day < CURRENT_DATE and record1.classification_count > 1000 and record2.classification_count > 1000 order by classification_rate desc;") # rubocop:disable Layout/LineLength
 
-flagged_project_ids = []
+flagged_project_id_to_high_classifying_dates = {}
 projects_weekly_classifications_history.each do |proj_history|
-  flagged_project_ids << proj_history['project_id'] if proj_history['classification_rate'] >= PROJECT_SPURIOUS_CLASSIFICATION_RATE_LOWER_BOUND
+  next unless proj_history['classification_rate'] >= PROJECT_SPURIOUS_CLASSIFICATION_RATE_LOWER_BOUND && proj_history['percentage_diff'] >= PERCENTAGE_DIFF_THRESHOLD
+
+  flagged_project_id_to_high_classifying_dates[proj_history['project_id']] = [] if flagged_project_id_to_high_classifying_dates[proj_history['project_id']].nil?
+
+  if proj_history['day1_count'] > proj_history['day_compare_count']
+    flagged_project_id_to_high_classifying_dates[proj_history['project_id']] << proj_history['day1'].strftime('%Y-%m-%d')
+  elsif proj_history['day_compare_count'] > proj_history['day1_count']
+    flagged_project_id_to_high_classifying_dates[proj_history['project_id']] << proj_history['day_compare'].strftime('%Y-%m-%d')
+  end
 end
 
-flagged_project_ids = flagged_project_ids.uniq
-
 puts 'Potential Affected Project IDs...'
-puts flagged_project_ids
+puts flagged_project_id_to_high_classifying_dates.keys
+
+puts 'Finding Potential Spurious Classifiers for each Project...'
