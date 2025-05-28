@@ -1,0 +1,34 @@
+# frozen_string_literal: true
+
+require '../config/environment'
+require 'json'
+
+# if project's classification_rate (difference in classifications / days apart) is higher than 5000 classifications per day, we flag as potential project with spurious classifications
+PROJECT_SPURIOUS_CLASSIFICATION_RATE_LOWER_BOUND = 5_000
+
+puts 'Querying diffs to flag potential affected projects...'
+projects_weekly_classifications_history = ActiveRecord::Base.connection.exec_query("SELECT
+	record1.day as day1,
+	record2.day as day_compare,
+	record1.project_id,
+	record2.project_id,
+    record1.classification_count as day1_count,
+    record2.classification_count as day_compare_count,
+    abs(cast(record2.classification_count - record1.classification_count as float) / record1.classification_count) * 100 as percentage_diff,
+    abs(cast(record2.classification_count - record1.classification_count as float) / extract(day from record2.day - record1.day)) as classification_rate
+FROM
+    daily_classification_count_per_project AS record1
+INNER JOIN
+    daily_classification_count_per_project AS record2 ON record1.project_id = record2.project_id
+WHERE
+    record1.classification_count IS NOT NULL AND record2.classification_count IS NOT NULL and record1.day < record2.day and record1.day >= (CURRENT_DATE - INTERVAL '7 days') and record2.day >= CURRENT_DATE - INTERVAL '2 days' and record2.day < CURRENT_DATE and record1.classification_count > 1000 and record2.classification_count > 1000 order by classification_rate desc;") # rubocop:disable Layout/LineLength
+
+flagged_project_ids = []
+projects_weekly_classifications_history.each do |proj_history|
+  flagged_project_ids << proj_history['project_id'] if proj_history['classification_rate'] >= PROJECT_SPURIOUS_CLASSIFICATION_RATE_LOWER_BOUND
+end
+
+flagged_project_ids = flagged_project_ids.uniq
+
+puts 'Potential Affected Project IDs...'
+puts flagged_project_ids
