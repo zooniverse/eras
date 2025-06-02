@@ -12,15 +12,7 @@ USER_CLASSIFICATION_RATE_LOWER_BOUND = 3
 USER_CLASSIFICATION_COUNT_THRESHOLD = 1_000
 
 puts 'Querying diffs to flag potential affected projects...'
-projects_weekly_classifications_history = ActiveRecord::Base.connection.exec_query("SELECT
-	record1.day as day1,
-	record2.day as day_compare,
-	record1.project_id,
-	record2.project_id,
-    record1.classification_count as day1_count,
-    record2.classification_count as day_compare_count,
-    abs(cast(record2.classification_count - record1.classification_count as float) / record1.classification_count) * 100 as percentage_diff,
-    abs(cast(record2.classification_count - record1.classification_count as float) / extract(day from record2.day - record1.day)) as classification_rate
+projects_weekly_classifications_history = ActiveRecord::Base.connection.exec_query("SELECT record1.day as day1, record2.day as day_compare, record1.project_id, record2.project_id, record1.classification_count as day1_count, record2.classification_count as day_compare_count,abs(cast(record2.classification_count - record1.classification_count as float) / record1.classification_count) * 100 as percentage_diff, abs(cast(record2.classification_count - record1.classification_count as float) / extract(day from record2.day - record1.day)) as classification_rate
 FROM
     daily_classification_count_per_project AS record1
 INNER JOIN
