@@ -28,7 +28,7 @@ INNER JOIN
 WHERE
     record1.classification_count IS NOT NULL AND record2.classification_count IS NOT NULL and record1.day < record2.day and record1.day >= (CURRENT_DATE - INTERVAL '7 days') and record2.day >= CURRENT_DATE - INTERVAL '2 days' and record2.day < CURRENT_DATE and record1.classification_count > 1000 and record2.classification_count > 1000 order by classification_rate desc;")
 
-flagged_project_id_to_high_classifying_dates = Hash.new { |h,k| h[k] = [] }
+flagged_project_id_to_high_classifying_dates = Hash.new { |h, k| h[k] = [] }
 projects_weekly_classifications_history.each do |proj_history|
   next unless proj_history['classification_rate'] >= PROJECT_SPURIOUS_CLASSIFICATION_RATE_LOWER_BOUND && proj_history['percentage_diff'] >= PERCENTAGE_DIFF_THRESHOLD
 
