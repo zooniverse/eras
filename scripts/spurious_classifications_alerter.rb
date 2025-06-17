@@ -32,7 +32,7 @@ projects_weekly_classifications_history.each do |proj_history|
 end
 
 puts 'Potential Affected Project IDs...'
-puts flagged_project_id_to_high_classifying_dates.keys
+puts flagged_project_id_to_high_classifying_dates
 
 puts 'Finding Potential Spurious Classifiers for each Project...'
 
