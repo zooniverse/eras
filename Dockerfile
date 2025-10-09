@@ -1,4 +1,4 @@
-FROM ruby:3.2-buster
+FROM ruby:3.2-bookworm
 WORKDIR /app
 ARG RAILS_ENV
 
