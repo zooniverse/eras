@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class CreateHourlyProjectClassificationCountAndTime < ActiveRecord::Migration[7.0]
-   # we have to disable the migration transaction because creating materialized views within it is not allowed.
+  # we have to disable the migration transaction because creating materialized views within it is not allowed.
 
   # Due to how the front end pulls project stats (and workflow stats) all in one go, we hit performance issues; especially if a project has multiple workflows.
   # We have discovered that having a non-realtime/materialized only continous aggregate for our daily project count cagg is more performant than real time.

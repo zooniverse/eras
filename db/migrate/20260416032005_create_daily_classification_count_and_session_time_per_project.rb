@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CreateDailyClassificationCountAndSessionTimePerProject < ActiveRecord::Migration[7.0]
   # Meant to replace daily_classification_count_per_project.
   # original continuous aggregate (daily_classification_count_per_project) only accounted for sum of classification count per day.
