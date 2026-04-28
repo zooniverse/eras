@@ -32,19 +32,20 @@ projects_weekly_classifications_history.each do |proj_history|
 end
 
 puts 'Potential Affected Project IDs...'
+flagged_project_id_to_high_classifying_dates = flagged_project_id_to_high_classifying_dates.transform_values { |dates_arr| dates_arr.uniq.sort }
 puts flagged_project_id_to_high_classifying_dates
 
 puts 'Finding Potential Spurious Classifiers for each Project...'
 
-users_to_flag = []
-
+flagged_project_id_to_high_classifiers = Hash.new { |h, k| h[k] = [] }
 flagged_project_id_to_high_classifying_dates.each do |proj_id, dates|
-  user_rates_for_proj = ActiveRecord::Base.connection.exec_query('SELECT *, cast(classification_count as float) / total_session_time as rate from daily_user_classification_count_and_time_per_project where project_id = $1 and day = ANY($2) order by rate desc', 'SQL', [proj_id, "{#{dates.join(',')}}"])
+  user_rates_for_proj = ActiveRecord::Base.connection.exec_query('SELECT *, cast(classification_count as float) / total_session_time as rate from daily_user_classification_count_and_time_per_project where project_id = $1 and day = ANY($2) order by classification_count desc', 'SQL', [proj_id, "{#{dates.join(',')}}"])
 
   user_rates_for_proj.each do |user_rate|
-    users_to_flag << user_rate['user_id'] if user_rate['classification_count'] >= USER_CLASSIFICATION_COUNT_THRESHOLD
+    flagged_project_id_to_high_classifiers[proj_id] << user_rate['user_id'] if user_rate['classification_count'] >= USER_CLASSIFICATION_COUNT_THRESHOLD
   end
 end
 
 puts 'Flagged Users...'
-puts users_to_flag
+flagged_project_id_to_high_classifiers = flagged_project_id_to_high_classifiers.transform_values { |user_ids| user_ids.uniq.sort }
+puts flagged_project_id_to_high_classifiers
