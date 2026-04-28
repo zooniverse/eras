@@ -42,7 +42,7 @@ flagged_project_id_to_high_classifying_dates.each do |proj_id, dates|
   user_rates_for_proj = ActiveRecord::Base.connection.exec_query('SELECT *, cast(classification_count as float) / total_session_time as rate from daily_user_classification_count_and_time_per_project where project_id = $1 and day = ANY($2) order by rate desc', 'SQL', [proj_id, "{#{dates.join(',')}}"])
 
   user_rates_for_proj.each do |user_rate|
-    users_to_flag << user_rate['user_id'] if user_rate['rate'] >= USER_CLASSIFICATION_RATE_LOWER_BOUND && user_rate['classification_count'] >= USER_CLASSIFICATION_COUNT_THRESHOLD
+    users_to_flag << user_rate['user_id'] if user_rate['classification_count'] >= USER_CLASSIFICATION_COUNT_THRESHOLD
   end
 end
 
