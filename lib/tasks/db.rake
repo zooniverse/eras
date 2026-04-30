@@ -44,11 +44,12 @@ namespace :db do
     SQL
 
     ActiveRecord::Base.connection.execute <<-SQL
-      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_classification_count_per_project
+      CREATE MATERIALIZED VIEW IF NOT EXISTS daily_classification_count_and_time_per_project
       WITH (timescaledb.continuous) AS
       SELECT time_bucket('1 day', event_time) AS day,
       project_id,
-            count(*) as classification_count
+        count(*) as classification_count,
+        sum(session_time) as total_session_time
       FROM classification_events
       GROUP BY day, project_id;
     SQL
@@ -200,7 +201,7 @@ namespace :db do
     ActiveRecord::Base.connection.execute <<-SQL
     DROP MATERIALIZED VIEW IF EXISTS daily_classification_counts CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS daily_classification_count_per_workflow CASCADE;
-    DROP MATERIALIZED VIEW IF EXISTS daily_classification_count_per_project CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS daily_classification_count_and_time_per_project CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS daily_comment_count CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS daily_comment_count_per_project_and_user CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS daily_comment_count_per_user CASCADE;
