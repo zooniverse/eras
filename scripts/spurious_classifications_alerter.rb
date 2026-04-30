@@ -9,7 +9,12 @@ PROJECT_SPURIOUS_CLASSIFICATION_RATE_LOWER_BOUND = 5_000
 PERCENTAGE_DIFF_THRESHOLD = 50
 
 USER_CLASSIFICATION_RATE_LOWER_BOUND = 3
-USER_CLASSIFICATION_COUNT_THRESHOLD = 1_000
+USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE = 1_000
+USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO = 5_000
+
+def normalize_hash_values(hash_of_arrays)
+  hash_of_arrays.transform_values { |arr| arr.uniq.sort }
+end
 
 puts 'Querying diffs to flag potential affected projects...'
 projects_weekly_classifications_history = ActiveRecord::Base.connection.exec_query("SELECT record1.day as day1, record2.day as day_compare, record1.project_id, record2.project_id, record1.classification_count as day1_count, record2.classification_count as day_compare_count,abs(cast(record2.classification_count - record1.classification_count as float) / record1.classification_count) * 100 as percentage_diff, abs(cast(record2.classification_count - record1.classification_count as float) / extract(day from record2.day - record1.day)) as classification_rate
@@ -32,20 +37,27 @@ projects_weekly_classifications_history.each do |proj_history|
 end
 
 puts 'Potential Affected Project IDs...'
-flagged_project_id_to_high_classifying_dates = flagged_project_id_to_high_classifying_dates.transform_values { |dates_arr| dates_arr.uniq.sort }
+flagged_project_id_to_high_classifying_dates = normalize_hash_values(flagged_project_id_to_high_classifying_dates)
 puts flagged_project_id_to_high_classifying_dates
 
 puts 'Finding Potential Spurious Classifiers for each Project...'
 
-flagged_project_id_to_high_classifiers = Hash.new { |h, k| h[k] = [] }
+flagged_project_id_to_high_classifiers_tier_one = Hash.new { |h, k| h[k] = [] }
+flagged_project_id_to_high_classifiers_tier_two = Hash.new { |h, k| h[k] = [] }
 flagged_project_id_to_high_classifying_dates.each do |proj_id, dates|
   user_rates_for_proj = ActiveRecord::Base.connection.exec_query('SELECT *, cast(classification_count as float) / total_session_time as rate from daily_user_classification_count_and_time_per_project where project_id = $1 and day = ANY($2) order by classification_count desc', 'SQL', [proj_id, "{#{dates.join(',')}}"])
 
   user_rates_for_proj.each do |user_rate|
-    flagged_project_id_to_high_classifiers[proj_id] << user_rate['user_id'] if user_rate['classification_count'] >= USER_CLASSIFICATION_COUNT_THRESHOLD
+    flagged_project_id_to_high_classifiers_tier_one[proj_id] << user_rate['user_id'] if user_rate['classification_count'] >= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE && user_rate['classification_count'] <= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO
+
+    flagged_project_id_to_high_classifiers_tier_two[proj_id] << user_rate['user_id'] if user_rate['classification_count'] > USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO
   end
 end
 
-puts 'Flagged Users...'
-flagged_project_id_to_high_classifiers = flagged_project_id_to_high_classifiers.transform_values { |user_ids| user_ids.uniq.sort }
-puts flagged_project_id_to_high_classifiers
+puts 'Flagged Users Tier One...'
+flagged_project_id_to_high_classifiers_tier_one = normalize_hash_values(flagged_project_id_to_high_classifiers_tier_one)
+puts flagged_project_id_to_high_classifiers_tier_one
+
+puts 'Flagged Users Tier Two...'
+flagged_project_id_to_high_classifiers_tier_two = normalize_hash_values(flagged_project_id_to_high_classifiers_tier_two)
+puts flagged_project_id_to_high_classifiers_tier_two
