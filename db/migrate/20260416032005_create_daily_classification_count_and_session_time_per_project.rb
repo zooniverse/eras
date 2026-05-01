@@ -17,7 +17,7 @@ class CreateDailyClassificationCountAndSessionTimePerProject < ActiveRecord::Mig
         count(*) as classification_count,
         sum(session_time) as total_session_time
       from classification_events
-      group by day, project_id;
+      group by day, project_id WITH NO DATA;
     SQL
   end
 
