@@ -9,7 +9,8 @@ class CreateDailyClassificationCountAndSessionTimePerProject < ActiveRecord::Mig
     execute <<~SQL
       create materialized view daily_classification_count_and_time_per_project
       with (
-        timescaledb.continuous
+        timescaledb.continuous,
+        timescaledb.materialized_only = true
       ) as
       select
         time_bucket('1d', event_time) as day,
