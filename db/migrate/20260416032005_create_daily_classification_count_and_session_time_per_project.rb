@@ -9,7 +9,8 @@ class CreateDailyClassificationCountAndSessionTimePerProject < ActiveRecord::Mig
     execute <<~SQL
       create materialized view daily_classification_count_and_time_per_project
       with (
-        timescaledb.continuous
+        timescaledb.continuous,
+        timescaledb.materialized_only = true
       ) as
       select
         time_bucket('1d', event_time) as day,
@@ -17,7 +18,7 @@ class CreateDailyClassificationCountAndSessionTimePerProject < ActiveRecord::Mig
         count(*) as classification_count,
         sum(session_time) as total_session_time
       from classification_events
-      group by day, project_id;
+      group by day, project_id WITH NO DATA;
     SQL
   end
 
