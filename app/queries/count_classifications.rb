@@ -13,21 +13,19 @@ class CountClassifications
     scoped = @counts
     scoped = filter_by_workflow_id(scoped, params[:workflow_id])
     scoped = filter_by_project_id(scoped, params[:project_id])
-    # Because of how the FE, calls out to this endpoint when querying for a project's workflow's classifications count
-    # And because of our use of Real Time Aggregates
-    # Querying the DailyClassificationCountByWorkflow becomes not as performant
-    # Because we are limited in resources, we do the following mitigaion for ONLY querying workflow classification counts:
-    # 1. Create a New HourlyClassificationCountByWorkflow which is RealTime and Create a Data Retention for this new aggregate (this should limit the amount of data the query planner has to sift through)
-    # 2. Turn off Real Time aggreation for the DailyClassificationCount
-    # 3. For workflow classification count queries that include the current date's counts, we query current date's counts via the HourlyClassificationCountByWorkflow and query the DailyClassificationCountByWorkflow for everything before the current date's
+    # Because of our use of Real Time Aggregates
+    # Querying the DailyClassificationCounts directly for Real Time Data becomes not as performant
+    # Because we are limited in resources, we do the following mitigation:
+    # 1. Create a New Hourly(Workflow/Project)ClassificationCount which is RealTime
+    # and Create a Data Retention for this new aggregate (this should limit the amount of data the query planner has to sift through)
+    # 2. Turn off Real Time aggregation for the Daily(Workflow/Project)ClassificationCount
+    # 3. For classification count queries that include the current date's counts,
+    # we query current date's counts via the Hourly(Project/Workflow)ClassificationCount
+    # and query the Daily(Workflow/Project)Count for everything before the current date's
 
-    if params[:workflow_id].present?
-      if end_date_includes_today?(params[:end_date])
-        scoped_upto_yesterday = filter_by_date_range(scoped, params[:start_date], Date.yesterday.to_s)
-        scoped = include_today_to_scoped(scoped_upto_yesterday, params[:workflow_id], params[:period])
-      else
-        scoped = filter_by_date_range(scoped, params[:start_date], params[:end_date])
-      end
+    if end_date_includes_today?(params[:end_date])
+      scoped_upto_yesterday = filter_by_date_range(scoped, params[:start_date], Date.yesterday.to_s)
+      scoped = include_today_to_scoped(scoped_upto_yesterday, params)
     else
       scoped = filter_by_date_range(scoped, params[:start_date], params[:end_date])
     end
@@ -40,13 +38,14 @@ class CountClassifications
     relation.select(select_and_time_bucket_by(period, 'classification')).group('period').order('period')
   end
 
-  def include_today_to_scoped(scoped_upto_yesterday, workflow_id, period)
-    period = 'year' if period.nil?
-    todays_classifications = current_date_workflow_classifications(workflow_id)
+  def include_today_to_scoped(scoped_upto_yesterday, params)
+    period = (params[:period] || 'year').downcase
+    todays_classifications = current_date_classifications(params)
     return scoped_upto_yesterday if todays_classifications.blank?
 
     if scoped_upto_yesterday.blank?
       # append new entry where period is start of the period
+      # this happens when a project is new
       todays_classifications[0].period = start_of_current_period(period).to_time.utc
       return todays_classifications
     end
@@ -94,16 +93,29 @@ class CountClassifications
     count_records_up_to_yesterday
   end
 
-  def current_date_workflow_classifications(workflow_id)
+  def current_date_classifications(params)
     current_day_str = Date.today.to_s
-    current_hourly_classifications = ClassificationCounts::HourlyWorkflowClassificationCount.select("time_bucket('1 day', hour) AS period, SUM(classification_count)::integer AS count").group('period').order('period').where("hour >= '#{current_day_str}'")
-    filter_by_workflow_id(current_hourly_classifications, workflow_id)
+    hourly_relation = hourly_relation(params)
+    current_hourly_classifications = hourly_relation.select("time_bucket('1 day', hour) AS period, SUM(classification_count)::integer AS count").group('period').order('period').where("hour >= '#{current_day_str}'")
+
+    filter_by_workflow_id(current_hourly_classifications, params[:workflow_id])
+    filter_by_project_id(current_hourly_classifications, params[:project_id])
   end
 
   def end_date_includes_today?(end_date)
     includes_today = true
     includes_today = Date.parse(end_date) >= Date.today if end_date.present?
     includes_today
+  end
+
+  def hourly_relation(params)
+    if params[:workflow_id]
+      ClassificationCounts::HourlyWorkflowClassificationCount
+    elsif params[:project_id]
+      ClassificationCounts::HourlyProjectClassificationCount
+    else
+      ClassificationCounts::HourlyClassificationCount
+    end
   end
 
   def relation(params)
