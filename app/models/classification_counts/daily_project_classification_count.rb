@@ -4,7 +4,6 @@ module ClassificationCounts
   class DailyProjectClassificationCount < ApplicationRecord
     self.table_name = 'daily_classification_count_and_time_per_project'
     attribute :classification_count, :integer
-    attribute :total_session_time, :float
 
     def readonly?
       true

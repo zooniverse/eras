@@ -44,18 +44,19 @@ class CountClassifications
     return scoped_upto_yesterday if todays_classifications.blank?
 
     if scoped_upto_yesterday.blank?
-      # append new entry where period is start of the period
-      # this happens when a project is new
+      # Append a new entry using the start of the current period.
+      # This occurs when the project is newly created and no existing period entry exists.
       todays_classifications[0].period = start_of_current_period(period).to_time.utc
       return todays_classifications
     end
 
     most_recent_date_from_scoped = scoped_upto_yesterday[-1].period.to_date
 
-    # If period=week, month, or year, the current date could be part of that week, month or year;
-    # we check if the current date is part of the period
-    # if so, we add the count to the most recent period pulled from db
-    # if not, we append as a new entry for the current period
+    # For weekly, monthly, and yearly periods, the current date may already
+    # belong to the latest period returned from the database.
+    #
+    # If the current date falls within that period, add its count to the
+    # existing entry. Otherwise, append a new entry for the current period.
     if today_part_of_recent_period?(most_recent_date_from_scoped, period)
       add_todays_counts_to_recent_period_counts(scoped_upto_yesterday, todays_classifications)
     else
@@ -96,10 +97,9 @@ class CountClassifications
   def current_date_classifications(params)
     current_day_str = Date.today.to_s
     hourly_relation = hourly_relation(params)
-    current_hourly_classifications = hourly_relation.select("time_bucket('1 day', hour) AS period, SUM(classification_count)::integer AS count").group('period').order('period').where("hour >= '#{current_day_str}'")
-
-    filter_by_workflow_id(current_hourly_classifications, params[:workflow_id])
-    filter_by_project_id(current_hourly_classifications, params[:project_id])
+    current_date_hourly_classifications = hourly_relation.select("time_bucket('1 day', hour) AS period, SUM(classification_count)::integer AS count").group('period').order('period').where("hour >= '#{current_day_str}'")
+    current_date_hourly_classifications = filter_by_workflow_id(current_date_hourly_classifications, params[:workflow_id])
+    filter_by_project_id(current_date_hourly_classifications, params[:project_id])
   end
 
   def end_date_includes_today?(end_date)
