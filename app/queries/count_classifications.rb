@@ -13,8 +13,8 @@ class CountClassifications
     scoped = @counts
     scoped = filter_by_workflow_id(scoped, params[:workflow_id])
     scoped = filter_by_project_id(scoped, params[:project_id])
-    # Because of our use of Real Time Aggregates
-    # Querying the DailyClassificationCounts directly for Real Time Data becomes not as performant
+
+    # Querying the DailyClassificationCounts directly for Real Time Data is not performant if cagg is a Real Time Aggregate
     # Because we are limited in resources, we do the following mitigation:
     # 1. Create a New Hourly(Workflow/Project)ClassificationCount which is RealTime
     # and Create a Data Retention for this new aggregate (this should limit the amount of data the query planner has to sift through)

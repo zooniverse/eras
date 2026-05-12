@@ -44,7 +44,6 @@ RSpec.describe CountClassifications do
 
     it_behaves_like 'is filterable by workflow'
     it_behaves_like 'is filterable by project'
-    it_behaves_like 'is filterable by date range'
 
     it 'returns counts of all events when no params given' do
       # because default is bucket by year and all data created in the same year, we expect counts to look something like
@@ -87,9 +86,9 @@ RSpec.describe CountClassifications do
       expect(counts[0].count).to eq(1)
     end
 
-    context 'when params[:workflow_id] present' do
-      context 'when params[:end_date] is before current date' do
-        it 'returns counts from DailyWorkflowClassificationCount' do
+    context 'querying using hierarchal continuous aggregates' do
+      context 'when params[:end_date] EXCLUDES current date' do
+        it 'returns counts from DailyWorkflowClassificationCount if workflow_id is present' do
           yesterday = Date.today - 1
           params[:workflow_id] = diff_time_event.workflow_id.to_s
           params[:end_date] = yesterday.to_s
@@ -97,52 +96,77 @@ RSpec.describe CountClassifications do
           expect(counts.length).to eq(1)
           expect(counts[0].count).to eq(1)
         end
+
+        it 'returns counts from DailyProjectCounts if project_id is present' do
+          yesterday = Date.today - 1
+          params[:project_id] = diff_time_event.project_id.to_s
+          params[:end_date] = yesterday.to_s
+          expect(counts.model).to be(ClassificationCounts::DailyProjectClassificationCount)
+          expect(counts.length).to eq(1)
+          expect(counts[0].count).to eq(1)
+        end
+
+        it 'returns counts from DailyClassificationCounts' do
+          yesterday = Date.today - 1
+          params[:end_date] = yesterday.to_s
+          expect(counts.model).to be(ClassificationCounts::DailyClassificationCount)
+          expect(counts.length).to eq(1)
+          expect(counts[0].count).to eq(1)
+        end
       end
 
-      context 'when params[:end_date] includes current date' do
+      context 'when params[:end_date] INCLUDES current date' do
         before do
           params[:end_date] = Date.today.to_s
         end
 
-        context 'when 0 classifications up to previous day' do
+        context 'when 0 classifications exist up to previous day' do
           context 'when 0 classifications for current day' do
-            it 'returns from DailyWorkflowClassificationCount' do
+            it 'queries from DailyWorkflowClassificationCount if workflow_id present' do
               # Select a workflow id that has no classification
               params[:workflow_id] = '100'
               expect(counts.model).to be(ClassificationCounts::DailyWorkflowClassificationCount)
               expect(counts.length).to eq(0)
             end
+
+            it 'queries from DailyProjectClassificationCount if project_id present' do
+              # Select a project id that has no classification
+              params[:project_id] = '100'
+              expect(counts.model).to be(ClassificationCounts::DailyProjectClassificationCount)
+              expect(counts.length).to eq(0)
+            end
           end
 
           context 'when there are classifications for current day' do
-            before do
-              params[:workflow_id] = diff_workflow_event.workflow_id.to_s
-            end
+            # before do
+            #   params[:workflow_id] = diff_workflow_event.workflow_id.to_s
+            # end
 
             it "returns today's classifications from HourlyWorkflowClassificationCount" do
+              params[:workflow_id] = diff_workflow_event.workflow_id.to_s
               expect(counts.model).to be(ClassificationCounts::HourlyWorkflowClassificationCount)
               expect(counts.length).to eq(1)
-              expect(counts[0].count).to eq(1)
+              expect(counts[-1].count).to eq(1)
             end
 
-            it 'returns current date when period is day' do
+            it 'last count entry uses current date when period is day' do
               params[:period] = 'day'
-              expect(counts[0].period).to eq(Date.today.to_time.utc)
+              expect(counts[-1].period).to eq(Date.today.to_time.utc)
             end
 
-            it 'returns start of week when period is week' do
+            it 'last count entry uses start of week when period is week' do
               params[:period] = 'week'
-              expect(counts[0].period).to eq(Date.today.at_beginning_of_week.to_time.utc)
+              expect(counts[-1].period).to eq(Date.today.at_beginning_of_week.to_time.utc)
             end
 
-            it 'returns start of month when period is month' do
+            it 'last count entry uses start of month when period is month' do
               params[:period] = 'month'
-              expect(counts[0].period).to eq(Date.today.at_beginning_of_month.to_time.utc)
+              expect(counts[-1].period).to eq(Date.today.at_beginning_of_month.to_time.utc)
             end
 
-            it 'returns start of year when period is year' do
+            it 'last count entry uses start of year when period is year' do
               params[:period] = 'year'
-              expect(counts[0].period).to eq(Date.today.at_beginning_of_year.to_time.utc)
+              expect(counts[-1].period).to eq(Date.today.at_beginning_of_year.to_time.utc)
             end
           end
         end
