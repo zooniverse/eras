@@ -19,7 +19,7 @@ def normalize_hash_values(hash_of_arrays)
 end
 
 def format_report_for_slack(hash_of_arrays)
-  hash_of_arrays.map { |k, v| "<https://www.zooniverse.org/lab/#{k}|#{k}>: #{v}" }.join("\n")
+  hash_of_arrays.map { |k, v| "<https://www.zooniverse.org/lab/#{k}|Project #{k}>: #{v}" }.join("\n")
 end
 
 puts 'Querying diffs to flag potential affected projects...'
@@ -91,7 +91,7 @@ message = {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: format_report_for_slack(flagged_project_id_to_high_classifying_dates).to_s
+        text: format_report_for_slack(flagged_project_id_to_high_classifying_dates).presence || 'None'
       }
     },
     {
@@ -105,7 +105,7 @@ message = {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: format_report_for_slack(flagged_project_id_to_high_classifiers_tier_one).to_s
+        text: format_report_for_slack(flagged_project_id_to_high_classifiers_tier_one).presence || 'None'
       }
     },
     {
@@ -119,7 +119,7 @@ message = {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: format_report_for_slack(flagged_project_id_to_high_classifiers_tier_two).to_s
+        text: format_report_for_slack(flagged_project_id_to_high_classifiers_tier_two).presence || 'None'
       }
     }
   ]
@@ -131,6 +131,7 @@ http.use_ssl = true
 request = Net::HTTP::Post.new(uri.request_uri)
 request['Content-Type'] = 'application/json'
 request.body = message.to_json
+
 
 response = http.request(request)
 
