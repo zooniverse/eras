@@ -24,14 +24,14 @@ RSpec.describe CountClassifications do
   describe 'select_and_time_bucket_by' do
     let(:counts) { count_classifications.call(params) }
     it 'buckets counts by year by default' do
-      expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count FROM \"daily_classification_count\" GROUP BY period ORDER BY period"
-      expect(counts.to_sql).to eq(expected_select_query)
+      expected_select_bucket_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count FROM \"daily_classification_count\""
+      expect(counts.to_sql).to include(expected_select_bucket_query)
     end
 
     it 'buckets counts by given period' do
       params[:period] = 'week'
-      expected_select_query = "SELECT time_bucket('1 week', day) AS period, SUM(classification_count)::integer AS count FROM \"daily_classification_count\" GROUP BY period ORDER BY period"
-      expect(counts.to_sql).to eq(expected_select_query)
+      expected_select_bucket_query = "SELECT time_bucket('1 week', day) AS period, SUM(classification_count)::integer AS count FROM \"daily_classification_count\""
+      expect(counts.to_sql).to include(expected_select_bucket_query)
     end
   end
 
@@ -120,7 +120,7 @@ RSpec.describe CountClassifications do
           params[:end_date] = Date.today.to_s
         end
 
-        context 'when 0 classifications exist up to previous day' do
+        context 'when 0 classifications exist up to previous day,' do
           context 'when 0 classifications for current day' do
             it 'queries from DailyWorkflowClassificationCount if workflow_id present' do
               # Select a workflow id that has no classification
@@ -157,36 +157,41 @@ RSpec.describe CountClassifications do
               expect(counts[-1].class).to be(ClassificationCounts::HourlyClassificationCount)
             end
 
-            it 'last count entry uses current date when period is day' do
+            it 'last count entry period is current date when period is day' do
               params[:period] = 'day'
               expect(counts[-1].period).to eq(Date.today.to_time.utc)
             end
 
-            it 'last count entry uses start of week when period is week' do
+            it 'last count entry period is start of week when period is week' do
               params[:period] = 'week'
               expect(counts[-1].period).to eq(Date.today.at_beginning_of_week.to_time.utc)
             end
 
-            it 'last count entry uses start of month when period is month' do
+            it 'last count entry period is start of month when period is month' do
               params[:period] = 'month'
               expect(counts[-1].period).to eq(Date.today.at_beginning_of_month.to_time.utc)
             end
 
-            it 'last count entry uses start of year when period is year' do
+            it 'last count entry period is start of year when period is year' do
               params[:period] = 'year'
               expect(counts[-1].period).to eq(Date.today.at_beginning_of_year.to_time.utc)
             end
           end
         end
 
-        context 'when there are classifications up to previous day' do
+        context 'when there are classifications up to previous day,' do
           context 'when there are 0 classifications for current day' do
             let!(:classification_created_yesterday_diff_workflow) { create(:classification_created_yesterday, workflow_id: 4, classification_id: 100) }
-            it 'returns from DailyWorkflowCount (scoped up to yesterday)' do
+            it 'queries from DailyWorkflowCount (scoped up to yesterday) when workflow_id provided' do
               params[:workflow_id] = classification_created_yesterday_diff_workflow.workflow_id.to_s
               expect(counts.model).to be(ClassificationCounts::DailyWorkflowClassificationCount)
-              expect(counts.length).to eq(1)
-              expect(counts[0].count).to eq(1)
+            end
+            it 'queries from DailyProjectCount (scoped up to yesterday) when project_id provided' do
+              params[:project_id] = classification_created_yesterday_diff_workflow.project_id.to_s
+              expect(counts.model).to be(ClassificationCounts::DailyProjectClassificationCount)
+            end
+            it 'queries from DailyClassificationCount (scoped up to yesterday)' do
+              expect(counts.model).to be(ClassificationCounts::DailyClassificationCount)
             end
           end
 

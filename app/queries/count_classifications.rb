@@ -45,7 +45,6 @@ class CountClassifications
 
     if scoped_upto_yesterday.blank?
       # Append a new entry using the start of the current period.
-      # This occurs when the project is newly created and no existing period entry exists.
       todays_classifications[0].period = start_of_current_period(period).to_time.utc
       return todays_classifications
     end
