@@ -137,16 +137,24 @@ RSpec.describe CountClassifications do
             end
           end
 
-          context 'when there are classifications for current day' do
-            # before do
-            #   params[:workflow_id] = diff_workflow_event.workflow_id.to_s
-            # end
-
-            it "returns today's classifications from HourlyWorkflowClassificationCount" do
+          context 'when there are classifications for current day,' do
+            it "queries today's classifications from HourlyWorkflowClassificationCount if workflow_id present" do
               params[:workflow_id] = diff_workflow_event.workflow_id.to_s
               expect(counts.model).to be(ClassificationCounts::HourlyWorkflowClassificationCount)
               expect(counts.length).to eq(1)
               expect(counts[-1].count).to eq(1)
+            end
+
+            it "queries today's classifications from HourlyProjectClassificationCount if project_id present" do
+              params[:project_id] = diff_project_event.project_id.to_s
+              expect(counts.model).to be(ClassificationCounts::HourlyProjectClassificationCount)
+              expect(counts.length).to eq(1)
+              expect(counts[-1].count).to eq(1)
+            end
+
+            it "queries today's classifications from HourlyClassificationCount" do
+              params[:period] = 'day'
+              expect(counts[-1].class).to be(ClassificationCounts::HourlyClassificationCount)
             end
 
             it 'last count entry uses current date when period is day' do
