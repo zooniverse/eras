@@ -196,29 +196,43 @@ RSpec.describe CountClassifications do
           end
 
           context 'when there are classifications for current day' do
-            before do
-              allow(Date).to receive(:today).and_return Date.new(2022, 10, 21)
-              params[:workflow_id] = diff_workflow_event.workflow_id.to_s
-              params[:period] = 'year'
-            end
-
             context 'when current day is part of the most recently pulled period' do
-              it 'adds the current day counts to the most recently pulled period counts' do
-                create(:classification_with_diff_workflow, classification_id: 1000, event_time: Date.new(2022, 1, 2))
+              it 'adds the current day counts to the most recently pulled period counts for workflow' do
+                params[:workflow_id] = diff_workflow_event.workflow_id.to_s
+                create(:classification_with_diff_workflow, classification_id: 1000, event_time: Date.today.at_beginning_of_month)
                 expect(counts.length).to eq(1)
-                # the 2 classifications counted is the one created in L170 as well as diff_workflow_event classification.
+                # the 2 classifications counted is the one created in L40(diff_workflow_event) as well as diff_workflow_event classification.
+                expect(counts[0].count).to eq(2)
+                expect(counts[0].period).to eq(Date.today.at_beginning_of_year)
+              end
+
+              it 'adds the current day counts to the most recently pulled period counts for project' do
+                params[:project_id] = diff_project_event.project_id.to_s
+                create(:classification_with_diff_project, classification_id: 1000, event_time: Date.today.at_beginning_of_month)
+                expect(counts.length).to eq(1)
+                # the 2 classifications counted is the one created in L41 as well as diff_project_event classification.
                 expect(counts[0].count).to eq(2)
                 expect(counts[0].period).to eq(Date.today.at_beginning_of_year)
               end
             end
 
-            context 'when current day is not part of the most recently pulled period' do
-              it 'appends a new entry to scoped from HourlyWorkflowCount query' do
+            context 'when current day is not part of the most recently pulled period,' do
+              it 'appends a new entry to scoped from HourlyWorkflowCount query if workflow_id provided' do
+                params[:workflow_id] = diff_workflow_event.workflow_id.to_s
                 create(:classification_with_diff_workflow, classification_id: 1000, event_time: Date.new(2021, 1, 2))
                 expect(counts.length).to eq(2)
                 counts.each { |c| expect(c.count).to eq(1) }
                 expect(counts[0].class).to be(ClassificationCounts::DailyWorkflowClassificationCount)
                 expect(counts[1].class).to be(ClassificationCounts::HourlyWorkflowClassificationCount)
+                expect(counts.last.period).to eq(Date.today.at_beginning_of_year)
+              end
+              it 'appends a new entry to scoped from HourlyProjectCounts query if project_id provided' do
+                params[:project_id] = diff_project_event.project_id.to_s
+                create(:classification_with_diff_project, classification_id: 1000, event_time: Date.new(2021, 1, 2))
+                expect(counts.length).to eq(2)
+                counts.each { |c| expect(c.count).to eq(1) }
+                expect(counts[0].class).to be(ClassificationCounts::DailyProjectClassificationCount)
+                expect(counts[1].class).to be(ClassificationCounts::HourlyProjectClassificationCount)
                 expect(counts.last.period).to eq(Date.today.at_beginning_of_year)
               end
             end
