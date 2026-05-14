@@ -2,6 +2,8 @@
 # frozen_string_literal: true
 
 require '../config/environment'
+require 'net/http'
+require 'uri'
 require 'json'
 
 # if project's classification_rate (difference in classifications / days apart) is higher than 5000 classifications per day and percentage difference is over 50% then we flag as potential project with spurious classifications
@@ -14,6 +16,10 @@ USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO = 5_000
 
 def normalize_hash_values(hash_of_arrays)
   hash_of_arrays.transform_values { |arr| arr.uniq.sort }
+end
+
+def format_report_for_slack(hash_of_arrays)
+  hash_of_arrays.map { |k, v| "<https://www.zooniverse.org/lab/#{k}|Project #{k}>: #{v}" }.join("\n")
 end
 
 puts 'Querying diffs to flag potential affected projects...'
@@ -38,7 +44,6 @@ end
 
 puts 'Potential Affected Project IDs...'
 flagged_project_id_to_high_classifying_dates = normalize_hash_values(flagged_project_id_to_high_classifying_dates)
-puts flagged_project_id_to_high_classifying_dates
 
 puts 'Finding Potential Spurious Classifiers for each Project...'
 
@@ -54,10 +59,82 @@ flagged_project_id_to_high_classifying_dates.each do |proj_id, dates|
   end
 end
 
-puts 'Flagged Users Tier One...'
 flagged_project_id_to_high_classifiers_tier_one = normalize_hash_values(flagged_project_id_to_high_classifiers_tier_one)
-puts flagged_project_id_to_high_classifiers_tier_one
-
-puts 'Flagged Users Tier Two...'
 flagged_project_id_to_high_classifiers_tier_two = normalize_hash_values(flagged_project_id_to_high_classifiers_tier_two)
-puts flagged_project_id_to_high_classifiers_tier_two
+
+webhook_url = Rails.application.credentials.dig(:slack, :webhook_url)
+
+raise 'Missing Slack webhook URL' unless webhook_url
+
+uri = URI.parse(webhook_url)
+
+message = {
+  blocks: [
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: "*Potential Spurious Classifications Report* \n"
+      }
+    },
+    {
+      type: 'divider'
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: "*High Classified Projects* \n"
+      }
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: format_report_for_slack(flagged_project_id_to_high_classifying_dates).presence || 'None'
+      }
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: "*Flagged Users Tier I (> 1000 classifications < 5000 classifications in a day)* \n"
+      }
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: format_report_for_slack(flagged_project_id_to_high_classifiers_tier_one).presence || 'None'
+      }
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: "*Flagged Users Tier II (>  5000 classifications in a day)* \n"
+      }
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: format_report_for_slack(flagged_project_id_to_high_classifiers_tier_two).presence || 'None'
+      }
+    }
+  ]
+}
+
+http = Net::HTTP.new(uri.host, uri.port)
+http.use_ssl = true
+
+request = Net::HTTP::Post.new(uri.request_uri)
+request['Content-Type'] = 'application/json'
+request.body = message.to_json
+response = http.request(request)
+
+if response.code.to_i == 200
+  puts 'Slack message sent successfully'
+else
+  puts "Slack API error: #{response.code} #{response.body}"
+end
