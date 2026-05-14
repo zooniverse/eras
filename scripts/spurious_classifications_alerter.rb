@@ -131,8 +131,6 @@ http.use_ssl = true
 request = Net::HTTP::Post.new(uri.request_uri)
 request['Content-Type'] = 'application/json'
 request.body = message.to_json
-
-
 response = http.request(request)
 
 if response.code.to_i == 200
