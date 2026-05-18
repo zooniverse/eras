@@ -74,7 +74,7 @@ message = {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: "*Potential Spurious Classifications Report* \n"
+        text: "<@U0762C6KH> *Potential Spurious Classifications Report* \n"
       }
     },
     {
