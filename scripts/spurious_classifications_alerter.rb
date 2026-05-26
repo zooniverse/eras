@@ -25,9 +25,9 @@ end
 puts 'Querying diffs to flag potential affected projects...'
 projects_weekly_classifications_history = ActiveRecord::Base.connection.exec_query("SELECT record1.day as day1, record2.day as day_compare, record1.project_id, record2.project_id, record1.classification_count as day1_count, record2.classification_count as day_compare_count,abs(cast(record2.classification_count - record1.classification_count as float) / record1.classification_count) * 100 as percentage_diff, abs(cast(record2.classification_count - record1.classification_count as float) / extract(day from record2.day - record1.day)) as classification_rate
 FROM
-    daily_classification_count_per_project AS record1
+    daily_classification_count_and_time_per_project AS record1
 INNER JOIN
-    daily_classification_count_per_project AS record2 ON record1.project_id = record2.project_id
+    daily_classification_count_and_time_per_project AS record2 ON record1.project_id = record2.project_id
 WHERE
     record1.classification_count IS NOT NULL AND record2.classification_count IS NOT NULL and record1.day < record2.day and record1.day >= (CURRENT_DATE - INTERVAL '7 days') and record2.day >= CURRENT_DATE - INTERVAL '2 days' and record2.day < CURRENT_DATE and record1.classification_count > 1000 and record2.classification_count > 1000 order by classification_rate desc;")
 
