@@ -10,9 +10,11 @@ require 'json'
 PROJECT_SPURIOUS_CLASSIFICATION_RATE_LOWER_BOUND = 5_000
 PERCENTAGE_DIFF_THRESHOLD = 50
 
-USER_CLASSIFICATION_RATE_LOWER_BOUND = 3
-USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE = 1_000
+USER_CLASSIFICATION_RATE_LOWER_BOUND = 1
+USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE = 1_200
 USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO = 5_000
+# 360 mins in seconds
+USER_TOTAL_SESSION_TIME_LOWER_BOUND = 21_600
 
 def normalize_hash_values(hash_of_arrays)
   hash_of_arrays.transform_values { |arr| arr.uniq.sort }
@@ -53,27 +55,44 @@ def user_rates_for_project(proj_id, dates)
   ActiveRecord::Base.connection.exec_query('SELECT *, cast(classification_count as float) / total_session_time as rate from daily_user_classification_count_and_time_per_project where project_id = $1 and day = ANY($2) order by classification_count desc', 'SQL', [proj_id, "{#{dates.join(',')}}"])
 end
 
+def flag_user_as_tier_one? (classification_count, rate)
+  classification_count >= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE && classification_count <= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO && 
+  rate > USER_CLASSIFICATION_RATE_LOWER_BOUND
+end
+
+def flag_user_in_duty_of_care_tier? (classification_count, rate, total_session_time)
+  classification_count >= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE && classification_count <= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO && 
+  rate <= USER_CLASSIFICATION_RATE_LOWER_BOUND && 
+  total_session_time > USER_TOTAL_SESSION_TIME_LOWER_BOUND
+end
+
 def flagged_users(projects_to_high_classified_dates)
   tier_one = Hash.new { |h, k| h[k] = [] }
   tier_two = Hash.new { |h, k| h[k] = [] }
+  duty_of_care_tier = Hash.new { |h, k| h[k] = [] }
 
   projects_to_high_classified_dates.each do |project_id, dates|
     user_rates_for_project(project_id, dates).each do |user_rate|
       classification_count = user_rate['classification_count']
-      tier_one[project_id] << user_rate['user_id'] if classification_count >= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE && classification_count <= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO
+      rate = user_rate['rate']
+      total_session_time = user_rate['total_session_time']
+
+      tier_one[project_id] << user_rate['user_id'] if flag_user_as_tier_one?(classification_count, rate)
+
+      duty_of_care_tier[project_id] << user_rate['user_id'] if flag_user_in_duty_of_care_tier?(classification_count, rate, total_session_time)
 
       tier_two[project_id] << user_rate['user_id'] if classification_count >= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO
     end
   end
 
-  [normalize_hash_values(tier_one), normalize_hash_values(tier_two)]
+  [normalize_hash_values(tier_one), normalize_hash_values(tier_two), normalize_hash_values(duty_of_care_tier)]
 end
 
 puts 'Potential Affected Project IDs...'
 flagged_projects = flagged_projects_to_high_classifying_dates
 
 puts 'Finding Potential Spurious Classifiers for each Project...'
-flagged_project_id_to_high_classifiers_tier_one, flagged_project_id_to_high_classifiers_tier_two = flagged_users(flagged_projects)
+tier_one_users, tier_two_users, duty_of_care_tier_users = flagged_users(flagged_projects)
 
 webhook_url = Rails.application.credentials.dig(:slack, :webhook_url)
 
@@ -111,28 +130,41 @@ message = {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: "*Flagged Users Tier I (> 1000 classifications < 5000 classifications in a day)* \n"
+        text: "*Flagged Users Tier I (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & rate > #{USER_CLASSIFICATION_RATE_LOWER_BOUND}/s)* \n"
       }
     },
     {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: format_report_for_slack(flagged_project_id_to_high_classifiers_tier_one).presence || 'None'
+        text: format_report_for_slack(tier_one_users).presence || 'None'
+      }
+    },{
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: "*Duty of Care Tier  (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & session_time > #{USER_TOTAL_SESSION_TIME_LOWER_BOUND/60} mins)* \n"
       }
     },
     {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: "*Flagged Users Tier II (>  5000 classifications in a day)* \n"
+        text: format_report_for_slack(duty_of_care_tier_users).presence || 'None'
       }
     },
     {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: format_report_for_slack(flagged_project_id_to_high_classifiers_tier_two).presence || 'None'
+        text: "*Flagged Users Tier II (>  #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day)* \n"
+      }
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: format_report_for_slack(tier_two_users).presence || 'None'
       }
     }
   ]
