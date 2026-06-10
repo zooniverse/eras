@@ -107,7 +107,7 @@ def build_slack_message(projects, tier_one, duty_of_care_tier, tier_two)
       section("*High Classified Projects* \n"),
       section(format_report_for_slack(projects).presence || 'None'),
 
-      section("*Flagged Users Tier I (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & rate > #{USER_CLASSIFICATION_RATE_LOWER_BOUND}/s)* \n"),
+      section("*Flagged Users Tier I (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & rate > #{USER_CLASSIFICATION_RATE_LOWER_BOUND} classification/sec)* \n"),
       section(format_report_for_slack(tier_one).presence || 'None'),
 
       section("*Duty of Care Tier  (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & session_time > #{USER_TOTAL_SESSION_TIME_LOWER_BOUND / 60} mins)* \n"),
