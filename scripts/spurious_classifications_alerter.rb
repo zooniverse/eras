@@ -88,98 +88,65 @@ def flagged_users(projects_to_high_classified_dates)
   [normalize_hash_values(tier_one), normalize_hash_values(tier_two), normalize_hash_values(duty_of_care_tier)]
 end
 
+def section(text)
+  {
+    type: 'section',
+    text: {
+      type: 'mrkdwn',
+      text: text
+    }
+  }
+end
+
+def build_slack_message(projects, tier_one, duty_of_care_tier, tier_two)
+  {
+    blocks: [
+      section("<@U0762C6KH> *Potential Spurious Classifications Report*"),
+      { type: 'divider' },
+
+      section("*High Classified Projects* \n"),
+      section(format_report_for_slack(projects).presence || 'None'),
+
+      section("*Flagged Users Tier I (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & rate > #{USER_CLASSIFICATION_RATE_LOWER_BOUND}/s)* \n"),
+      section(format_report_for_slack(tier_one).presence || 'None'),
+
+      section("*Duty of Care Tier  (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & session_time > #{USER_TOTAL_SESSION_TIME_LOWER_BOUND/60} mins)* \n"),
+      section(format_report_for_slack(duty_of_care_tier).presence || 'None'),
+
+      section('*Flagged Users Tier II (> 5000 classifications/day)*'),
+      section(format_report_for_slack(tier_two).presence || 'None')
+    ]
+  }
+end
+
+def post_to_slack(message)
+  webhook_url = Rails.application.credentials.dig(:slack, :webhook_url)
+  raise 'Missing Slack webhook URL' unless webhook_url
+
+  uri = URI.parse(webhook_url)
+
+  http = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl = true
+
+  request = Net::HTTP::Post.new(uri.request_uri)
+  request['Content-Type'] = 'application/json'
+  request.body = message.to_json
+  response = http.request(request)
+
+  if response.code.to_i == 200
+    puts 'Slack message sent successfully'
+  else
+    puts "Slack API error: #{response.code} #{response.body}"
+  end
+end
+
 puts 'Potential Affected Project IDs...'
 flagged_projects = flagged_projects_to_high_classifying_dates
 
 puts 'Finding Potential Spurious Classifiers for each Project...'
 tier_one_users, tier_two_users, duty_of_care_tier_users = flagged_users(flagged_projects)
 
-webhook_url = Rails.application.credentials.dig(:slack, :webhook_url)
-
-raise 'Missing Slack webhook URL' unless webhook_url
-
-uri = URI.parse(webhook_url)
-
-message = {
-  blocks: [
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: "<@U0762C6KH> *Potential Spurious Classifications Report* \n"
-      }
-    },
-    {
-      type: 'divider'
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: "*High Classified Projects* \n"
-      }
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: format_report_for_slack(flagged_projects).presence || 'None'
-      }
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: "*Flagged Users Tier I (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & rate > #{USER_CLASSIFICATION_RATE_LOWER_BOUND}/s)* \n"
-      }
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: format_report_for_slack(tier_one_users).presence || 'None'
-      }
-    },{
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: "*Duty of Care Tier  (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & session_time > #{USER_TOTAL_SESSION_TIME_LOWER_BOUND/60} mins)* \n"
-      }
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: format_report_for_slack(duty_of_care_tier_users).presence || 'None'
-      }
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: "*Flagged Users Tier II (>  #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day)* \n"
-      }
-    },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: format_report_for_slack(tier_two_users).presence || 'None'
-      }
-    }
-  ]
-}
-
-http = Net::HTTP.new(uri.host, uri.port)
-http.use_ssl = true
-
-request = Net::HTTP::Post.new(uri.request_uri)
-request['Content-Type'] = 'application/json'
-request.body = message.to_json
-response = http.request(request)
-
-if response.code.to_i == 200
-  puts 'Slack message sent successfully'
-else
-  puts "Slack API error: #{response.code} #{response.body}"
-end
+puts 'Sending to Slack...'
+post_to_slack(
+  build_slack_message(flagged_projects, tier_one_users, duty_of_care_tier_users, tier_two_users)
+)
