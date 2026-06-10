@@ -55,15 +55,15 @@ def user_rates_for_project(proj_id, dates)
   ActiveRecord::Base.connection.exec_query('SELECT *, cast(classification_count as float) / total_session_time as rate from daily_user_classification_count_and_time_per_project where project_id = $1 and day = ANY($2) order by classification_count desc', 'SQL', [proj_id, "{#{dates.join(',')}}"])
 end
 
-def flag_user_as_tier_one? (classification_count, rate)
-  classification_count >= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE && classification_count <= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO && 
-  rate > USER_CLASSIFICATION_RATE_LOWER_BOUND
+def flag_user_as_tier_one?(classification_count, rate)
+  classification_count >= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE && classification_count <= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO &&
+    rate > USER_CLASSIFICATION_RATE_LOWER_BOUND
 end
 
-def flag_user_in_duty_of_care_tier? (classification_count, rate, total_session_time)
-  classification_count >= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE && classification_count <= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO && 
-  rate <= USER_CLASSIFICATION_RATE_LOWER_BOUND && 
-  total_session_time > USER_TOTAL_SESSION_TIME_LOWER_BOUND
+def flag_user_in_duty_of_care_tier?(classification_count, rate, total_session_time)
+  classification_count >= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE && classification_count <= USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO &&
+    rate <= USER_CLASSIFICATION_RATE_LOWER_BOUND &&
+    total_session_time > USER_TOTAL_SESSION_TIME_LOWER_BOUND
 end
 
 def flagged_users(projects_to_high_classified_dates)
@@ -101,7 +101,7 @@ end
 def build_slack_message(projects, tier_one, duty_of_care_tier, tier_two)
   {
     blocks: [
-      section("<@U0762C6KH> *Potential Spurious Classifications Report*"),
+      section('<@U0762C6KH> *Potential Spurious Classifications Report*'),
       { type: 'divider' },
 
       section("*High Classified Projects* \n"),
@@ -110,7 +110,7 @@ def build_slack_message(projects, tier_one, duty_of_care_tier, tier_two)
       section("*Flagged Users Tier I (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & rate > #{USER_CLASSIFICATION_RATE_LOWER_BOUND}/s)* \n"),
       section(format_report_for_slack(tier_one).presence || 'None'),
 
-      section("*Duty of Care Tier  (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & session_time > #{USER_TOTAL_SESSION_TIME_LOWER_BOUND/60} mins)* \n"),
+      section("*Duty of Care Tier  (> #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE} classifications < #{USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_TWO} classifications in a day & session_time > #{USER_TOTAL_SESSION_TIME_LOWER_BOUND / 60} mins)* \n"),
       section(format_report_for_slack(duty_of_care_tier).presence || 'None'),
 
       section('*Flagged Users Tier II (> 5000 classifications/day)*'),
