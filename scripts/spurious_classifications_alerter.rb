@@ -52,7 +52,7 @@ def flagged_projects_to_high_classifying_dates
 end
 
 def user_rates_for_project(proj_id, dates)
-  ActiveRecord::Base.connection.exec_query('SELECT *, cast(classification_count as float) / total_session_time as rate from daily_user_classification_count_and_time_per_project where project_id = $1 and day = ANY($2) order by classification_count desc', 'SQL', [proj_id, "{#{dates.join(',')}}"])
+  ActiveRecord::Base.connection.exec_query('SELECT *, cast(classification_count as float) / total_session_time as rate from daily_user_classification_count_and_time_per_project where project_id = $1 and day = ANY($2) and classification_count > 1000 and total_session_time > 0 order by classification_count desc', 'SQL', [proj_id, "{#{dates.join(',')}}"])
 end
 
 def flag_user_as_tier_one?(classification_count, rate)
