@@ -33,7 +33,7 @@ def projects_weekly_classifications_history
   INNER JOIN
       daily_classification_count_and_time_per_project AS record2 ON record1.project_id = record2.project_id
   WHERE
-      record1.classification_count IS NOT NULL AND record2.classification_count IS NOT NULL and record1.day < record2.day and record1.day >= (CURRENT_DATE - INTERVAL '7 days') and record2.day >= CURRENT_DATE - INTERVAL '7 days' and record2.day < CURRENT_DATE and record1.classification_count > 1000 and record2.classification_count > 1000 order by classification_rate desc;")
+      record1.classification_count IS NOT NULL AND record2.classification_count IS NOT NULL and record1.day < record2.day and record1.day >= (CURRENT_DATE - INTERVAL '7 days') and record2.day >= CURRENT_DATE - INTERVAL '7 days' and record2.day < CURRENT_DATE order by classification_rate desc;")
 end
 
 def flagged_projects_to_high_classifying_dates
