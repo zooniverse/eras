@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class CreateHourlyUserClassificationCountPerWorkflow < ActiveRecord::Migration[7.0]
-    disable_ddl_transaction!
+  disable_ddl_transaction!
   def up
     execute <<~SQL
       create materialized view hourly_user_classification_count_and_time_per_workflow
