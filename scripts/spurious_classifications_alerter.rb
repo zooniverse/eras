@@ -24,6 +24,13 @@ def format_report_for_slack(hash_of_arrays)
   hash_of_arrays.map { |k, v| "<https://www.zooniverse.org/lab/#{k}|Project #{k}>: #{v}" }.join("\n")
 end
 
+def format_additional_projects_for_slack(hash_of_hashes)
+  hash_of_hashes.map do |user_id, projects|
+    project_strings = projects.map { |project_id, day| "<https://www.zooniverse.org/lab/#{project_id}|Project #{project_id}> on #{day}" }
+    "User #{user_id}: #{project_strings.join(', ')}"
+  end.join("\n")
+end
+
 def projects_weekly_classifications_history
   puts 'Querying diffs to flag potential affected projects...'
 
@@ -33,7 +40,7 @@ def projects_weekly_classifications_history
   INNER JOIN
       daily_classification_count_and_time_per_project AS record2 ON record1.project_id = record2.project_id
   WHERE
-      record1.classification_count IS NOT NULL AND record2.classification_count IS NOT NULL and record1.day < record2.day and record1.day >= (CURRENT_DATE - INTERVAL '7 days') and record2.day >= CURRENT_DATE - INTERVAL '7 days' and record2.day < CURRENT_DATE order by classification_rate desc;")
+      record1.classification_count IS NOT NULL AND record2.classification_count IS NOT NULL and record1.day < record2.day and record1.day >= (CURRENT_DATE - INTERVAL '10 days') and record2.day >= CURRENT_DATE - INTERVAL '10 days' and record2.day < CURRENT_DATE order by classification_rate desc;")
 end
 
 def flagged_projects_to_high_classifying_dates
@@ -88,6 +95,24 @@ def flagged_users(projects_to_high_classified_dates)
   [normalize_hash_values(tier_one), normalize_hash_values(tier_two), normalize_hash_values(duty_of_care_tier)]
 end
 
+# Return a hash of user_id to list of projects that were not initially flagged but users from tier one and tier two have classified > 1200 classifications in a given day.
+def additional_projects(projects_to_high_classified_dates, tier_one, tier_two)
+  user_id_to_additional_projects = Hash.new { |h, k| h[k] = {} }
+
+  (tier_one.values.flatten + tier_two.values.flatten).uniq.each do |user_id|
+    user_projects = ActiveRecord::Base.connection.exec_query('SELECT project_id, day FROM daily_user_classification_count_and_time_per_project WHERE user_id = $1 AND classification_count > $2 and day >= CURRENT_DATE - INTERVAL \'10 days\'', 'SQL', [user_id, USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE])
+
+    user_projects.each do |user_project|
+      project_id = user_project['project_id']
+      day = user_project['day']
+      next if projects_to_high_classified_dates.key?(project_id)
+
+      user_id_to_additional_projects[user_id][project_id] = day.strftime('%Y-%m-%d')
+    end
+  end
+  user_id_to_additional_projects
+end
+
 def section(text)
   {
     type: 'section',
@@ -98,7 +123,7 @@ def section(text)
   }
 end
 
-def build_slack_message(projects, tier_one, duty_of_care_tier, tier_two)
+def build_slack_message(projects, tier_one, duty_of_care_tier, tier_two, additional_projects)
   {
     blocks: [
       section('<@U0762C6KH> *Potential Spurious Classifications Report*'),
@@ -114,7 +139,10 @@ def build_slack_message(projects, tier_one, duty_of_care_tier, tier_two)
       section(format_report_for_slack(duty_of_care_tier).presence || 'None'),
 
       section('*Flagged Users Tier II (> 5000 classifications/day)*'),
-      section(format_report_for_slack(tier_two).presence || 'None')
+      section(format_report_for_slack(tier_two).presence || 'None'),
+
+      section('*Additional Projects (Projects that were not initially flagged but users from Tier I and Tier II have classified > 1200 classifications in the past 10 days)*'),
+      section(format_additional_projects_for_slack(additional_projects).presence || 'None')
     ]
   }
 end
@@ -146,7 +174,10 @@ flagged_projects = flagged_projects_to_high_classifying_dates
 puts 'Finding Potential Spurious Classifiers for each Project...'
 tier_one_users, tier_two_users, duty_of_care_tier_users = flagged_users(flagged_projects)
 
+puts 'Finding Additional Projects for Tier I and Tier II Users...'
+user_id_to_additional_projects = additional_projects(flagged_projects, tier_one_users, tier_two_users)
+
 puts 'Sending to Slack...'
 post_to_slack(
-  build_slack_message(flagged_projects, tier_one_users, duty_of_care_tier_users, tier_two_users)
+  build_slack_message(flagged_projects, tier_one_users, duty_of_care_tier_users, tier_two_users, user_id_to_additional_projects)
 )
