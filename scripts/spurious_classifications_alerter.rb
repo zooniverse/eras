@@ -102,9 +102,6 @@ def additional_projects(projects_to_high_classified_dates, tier_one, tier_two)
   (tier_one.values.flatten + tier_two.values.flatten).uniq.each do |user_id|
     user_projects = ActiveRecord::Base.connection.exec_query('SELECT project_id, day FROM daily_user_classification_count_and_time_per_project WHERE user_id = $1 AND classification_count > $2 and day >= CURRENT_DATE - INTERVAL \'10 days\'', 'SQL', [user_id, USER_CLASSIFICATION_COUNT_THRESHOLD_TIER_ONE])
 
-    puts "User ID: #{user_id}"
-    puts user_projects
-
     user_projects.each do |user_project|
       project_id = user_project['project_id']
       day = user_project['day']
@@ -177,6 +174,7 @@ flagged_projects = flagged_projects_to_high_classifying_dates
 puts 'Finding Potential Spurious Classifiers for each Project...'
 tier_one_users, tier_two_users, duty_of_care_tier_users = flagged_users(flagged_projects)
 
+puts 'Finding Additional Projects for Tier I and Tier II Users...'
 user_id_to_additional_projects = additional_projects(flagged_projects, tier_one_users, tier_two_users)
 
 puts 'Sending to Slack...'
