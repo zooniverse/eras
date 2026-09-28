@@ -214,6 +214,38 @@ namespace :db do
       FROM classification_events
       GROUP BY hour, project_id;
     SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS hourly_user_classification_count_and_time
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 hour', event_time) AS hour,
+          sum(session_time) as total_session_time,
+          count(*) as classification_count
+      FROM classification_events
+      GROUP BY hour;
+    SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS hourly_user_classification_count_and_time_per_project
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 hour', event_time) AS hour,
+      project_id,
+          sum(session_time) as total_session_time,
+          count(*) as classification_count
+      FROM classification_events
+      GROUP BY hour, project_id;
+    SQL
+
+    ActiveRecord::Base.connection.execute <<-SQL
+      CREATE MATERIALIZED VIEW IF NOT EXISTS hourly_user_classification_count_and_time_per_workflow
+      WITH (timescaledb.continuous) AS
+      SELECT time_bucket('1 hour', event_time) AS hour,
+      workflow_id,
+          sum(session_time) as total_session_time,
+          count(*) as classification_count
+      FROM classification_events
+      GROUP BY hour, workflow_id;
+    SQL
   end
 
   desc 'Drop Continuous Aggregates Views'
@@ -237,6 +269,9 @@ namespace :db do
     DROP MATERIALIZED VIEW IF EXISTS hourly_classification_count_per_workflow CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS hourly_classification_count CASCADE;
     DROP MATERIALIZED VIEW IF EXISTS hourly_classification_count_and_time_per_project CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS hourly_user_classification_count_and_time CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS hourly_user_classification_count_and_time_per_project CASCADE;
+    DROP MATERIALIZED VIEW IF EXISTS hourly_user_classification_count_and_time_per_workflow CASCADE;
     SQL
   end
 
