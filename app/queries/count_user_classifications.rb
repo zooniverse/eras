@@ -3,6 +3,7 @@
 class CountUserClassifications
   include Filterable
   include SelectableWithTimeBucket
+  include IncludesCurrentDay
   attr_reader :counts
 
   def initialize(params)
@@ -26,10 +27,6 @@ class CountUserClassifications
 
   private
 
-  def today_part_of_recent_period?(most_recent_date, period)
-    most_recent_date == start_of_current_period(period)
-  end
-
   def current_date_classifications(params)
     current_day_str = Date.today.to_s
     hourly_relation = hourly_relation(params)
@@ -42,31 +39,6 @@ class CountUserClassifications
     current_date_hourly_classifications = filter_by_workflow_id(current_date_hourly_classifications, params[:workflow_id])
     current_date_hourly_classifications = filter_by_project_id(current_date_hourly_classifications, params[:project_id])
     current_date_hourly_classifications
-  end
-
-  def start_of_current_period(period)
-    today = Date.today
-    case period
-    when 'day'
-      today
-    when 'week'
-      # Returns Monday of current week
-      today.at_beginning_of_week
-    when 'month'
-      today.at_beginning_of_month
-    when 'year'
-      today.at_beginning_of_year
-    end
-  end
-
-  def append_today_to_scoped(count_records_up_to_yesterday, todays_count)
-    count_records_up_to_yesterday + todays_count
-  end
-
-  def add_todays_counts_to_recent_period_counts(count_records_up_to_yesterday, todays_count)
-    current_period_counts = count_records_up_to_yesterday[-1].count + todays_count[0].count
-    count_records_up_to_yesterday[-1].count = current_period_counts
-    count_records_up_to_yesterday
   end
 
   def include_today_to_scoped(scoped_upto_yesterday, params)
@@ -100,12 +72,6 @@ class CountUserClassifications
     current_period_times = count_records_up_to_yesterday[-1].session_time + todays_count[0].session_time
     count_records_up_to_yesterday[-1].session_time = current_period_times
     count_records_up_to_yesterday
-  end
-
-  def end_date_includes_today?(end_date)
-    includes_today = true
-    includes_today = Date.parse(end_date) >= Date.today if end_date.present?
-    includes_today
   end
 
   def initial_scope(relation, params)
