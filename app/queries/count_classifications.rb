@@ -65,6 +65,18 @@ class CountClassifications
     end
   end
 
+  def add_todays_counts_to_recent_period_counts(
+    count_records_up_to_yesterday,
+    todays_count
+  )
+    current_period_counts =
+      count_records_up_to_yesterday[-1].count + todays_count[0].count
+
+    count_records_up_to_yesterday[-1].count = current_period_counts
+
+    count_records_up_to_yesterday
+  end
+
   def current_date_classifications(params)
     current_day_str = Date.today.to_s
     hourly_relation = hourly_relation(params)

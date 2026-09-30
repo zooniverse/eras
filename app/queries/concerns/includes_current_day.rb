@@ -24,23 +24,13 @@ module IncludesCurrentDay
     count_records_up_to_yesterday + todays_count
   end
 
-  def add_todays_counts_to_recent_period_counts(
-    count_records_up_to_yesterday,
-    todays_count
-  )
-    current_period_counts =
-      count_records_up_to_yesterday[-1].count + todays_count[0].count
-
-    count_records_up_to_yesterday[-1].count = current_period_counts
-
-    count_records_up_to_yesterday
-  end
-
   def end_date_includes_today?(end_date)
     includes_today = true
 
-    includes_today =
-      Date.parse(end_date) >= Date.today if end_date.present?
+    if end_date.present?
+      includes_today =
+        Date.parse(end_date) >= Date.today
+    end
 
     includes_today
   end
