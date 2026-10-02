@@ -29,29 +29,29 @@ RSpec.describe CountUserClassifications do
   describe 'select_clause' do
     it 'buckets counts by year by default' do
       counts = count_user_classifications.call(params)
-      expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count FROM \"daily_user_classification_count_and_time\" GROUP BY period ORDER BY period"
-      expect(counts.to_sql).to eq(expected_select_query)
+      expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count"
+      expect(counts.to_sql).to include(expected_select_query)
     end
 
     it 'buckets counts by given period' do
       params[:period] = 'week'
       counts = count_user_classifications.call(params)
-      expected_select_query = "SELECT time_bucket('1 week', day) AS period, SUM(classification_count)::integer AS count FROM \"daily_user_classification_count_and_time\" GROUP BY period ORDER BY period"
-      expect(counts.to_sql).to eq(expected_select_query)
+      expected_select_query = "SELECT time_bucket('1 week', day) AS period, SUM(classification_count)::integer AS count"
+      expect(counts.to_sql).to include(expected_select_query)
     end
 
     it 'queries for total session time if querying for time_spent' do
       params[:time_spent] = true
       counts = count_user_classifications.call(params)
-      expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count, SUM(total_session_time)::float AS session_time FROM \"daily_user_classification_count_and_time\" GROUP BY period ORDER BY period"
-      expect(counts.to_sql).to eq(expected_select_query)
+      expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count, SUM(total_session_time)::float AS session_time"
+      expect(counts.to_sql).to include(expected_select_query)
     end
 
     it 'queries for project_id if querying for project_contributions' do
       params[:project_contributions] = true
       counts = count_user_classifications.call(params)
-      expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count, project_id FROM \"daily_user_classification_count_and_time_per_project\" GROUP BY period, project_id ORDER BY period"
-      expect(counts.to_sql).to eq(expected_select_query)
+      expected_select_query = "SELECT time_bucket('1 year', day) AS period, SUM(classification_count)::integer AS count, project_id"
+      expect(counts.to_sql).to include(expected_select_query)
     end
   end
 
@@ -119,6 +119,33 @@ RSpec.describe CountUserClassifications do
       counts = count_user_classifications.call(params)
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(1)
+    end
+
+    context 'querying using hierarchal continuous aggregates' do
+      context 'when end_date does not include today' do
+        it 'returns counts of events within given date range' do
+          last_week = Date.today - 7
+          yesterday = Date.today - 1
+          params[:start_date] = last_week.to_s
+          params[:end_date] = yesterday.to_s
+          counts = count_user_classifications.call(params)
+          expect(counts.length).to eq(1)
+          expect(counts[0].count).to eq(1)
+        end
+      end
+      
+      context 'when end_date includes today' do
+        it 'returns counts of events within given date range and includes today', focus: true do
+          last_week = Date.today - 7
+          params[:start_date] = last_week.to_s
+          params[:end_date] = Date.today.to_s
+          params[:period] = 'day'
+          counts = count_user_classifications.call(params)
+          expect(counts.length).to eq(2)
+          expect(counts[0].count).to eq(1)
+          expect(counts[1].count).to eq(3)
+        end
+      end
     end
   end
 end

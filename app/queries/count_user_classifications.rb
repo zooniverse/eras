@@ -44,8 +44,9 @@ class CountUserClassifications
     return scoped_upto_yesterday if todays_classifications.blank?
 
     if scoped_upto_yesterday.blank?
-      # Append a new entry using the start of the current period.
-      todays_classifications[0].period = start_of_current_period(period).to_time.utc
+      todays_classifications.each do |classification|
+        classification.period = start_of_current_period(period).to_time.utc
+      end
       return todays_classifications
     end
 
@@ -54,7 +55,9 @@ class CountUserClassifications
     if today_part_of_recent_period?(most_recent_date_from_scoped, period)
       add_todays_counts_to_recent_period_counts(scoped_upto_yesterday, todays_classifications, params)
     else
-      todays_classifications[0].period = start_of_current_period(period).to_time.utc
+      todays_classifications.each do |classification|
+        classification.period = start_of_current_period(period).to_time.utc
+      end
       append_today_to_scoped(scoped_upto_yesterday, todays_classifications)
     end
   end
@@ -64,25 +67,26 @@ class CountUserClassifications
     todays_count,
     params
   )
-    return add_project_contribution_counts(count_records_up_to_yesterday, todays_count) if params[:project_contributions]
+    return add_project_contribution_counts(count_records_up_to_yesterday, todays_count, params[:time_spent]) if params[:project_contributions]
 
     current_period_counts =
-      count_records_up_to_yesterday[-1].count + todays_count[0].count
-    count_records_up_to_yesterday[-1].count = current_period_counts
+      count_records_up_to_yesterday.last.count + todays_count[0].count
+    count_records_up_to_yesterday.last.count = current_period_counts
     if params[:time_spent]
-      current_period_times = count_records_up_to_yesterday[-1].session_time + todays_count[0].session_time
-      count_records_up_to_yesterday[-1].session_time = current_period_times
+      current_period_times = count_records_up_to_yesterday.last.session_time + todays_count[0].session_time
+      count_records_up_to_yesterday.last.session_time = current_period_times
     end
     count_records_up_to_yesterday
   end
 
-  def add_project_contribution_counts(scoped, todays_counts)
+  def add_project_contribution_counts(scoped, todays_counts, time_spent)
     scoped = scoped.to_a
+    classifications_by_project = scoped.index_by(&:project_id)
     todays_counts.each do |today_count|
-      existing_count = scoped.find { |scoped_count| scoped_count.project_id == today_count.project_id }
+      existing_count = classifications_by_project[today_count.project_id]
       if existing_count
         existing_count.count += today_count.count
-        existing_count.session_time += today_count.session_time
+        existing_count.session_time += today_count.session_time if time_spent
       else
         scoped = scoped << today_count
       end
