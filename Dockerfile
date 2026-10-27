@@ -3,7 +3,7 @@ WORKDIR /app
 ARG RAILS_ENV
 
 RUN apt-get update && \
-  apt-get install --no-install-recommends -y git curl libpq-dev libjemalloc2 && \
+  apt-get install --no-install-recommends -y git curl libpq-dev libjemalloc2 ca-certificates && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
