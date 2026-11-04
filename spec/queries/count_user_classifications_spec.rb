@@ -137,7 +137,7 @@ RSpec.describe CountUserClassifications do
           expect(counts[0].count).to eq(1)
         end
       end
-      
+
       context 'when end_date includes today' do
         context 'when there are no counts for today' do
           let!(:diff_time_event_of_other_user) { create(:classification_created_yesterday, user_id: 3, classification_id: 8) }
@@ -161,41 +161,52 @@ RSpec.describe CountUserClassifications do
             params[:period] = 'day'
             counts = count_user_classifications.call(params)
             # [<UserClassificationCounts::DailyUserClassificationCount period: yesterday's date, count: 1>, <UserClassificationCounts::HourlyUserClassificationCount period: today's date, count: 3>]
-            # Classifications created yesterday is just diff_time_event, 
+            # Classifications created yesterday is just diff_time_event,
             # and classifications created today are : classification_event, diff_workflow_event, and diff_project_event
             expect(counts.length).to eq(2)
             expect(counts[0].count).to eq(1)
             expect(counts[1].count).to eq(3)
           end
-        end
 
-        describe 'adds or appends queries from hourly_relation' do
-          it "queries today's counts from HourlyUserClassificationCount relation if no workflow_id or project_id present" do
-            params[:period] = 'day'
-            counts = count_user_classifications.call(params)
-            expect(counts.last).to be_an_instance_of UserClassificationCounts::HourlyUserClassificationCount
+          context 'when there are only counts for today' do
+            it 'returns counts queried from HourlyUserClassificationCount relation for classifications of today with correct period' do
+              params[:period] = 'month'
+              params[:id] = diff_user_classification.user_id.to_s
+              counts = count_user_classifications.call(params)
+              expect(counts.length).to eq(1)
+              expect(counts[0].count).to eq(1)
+              expect(counts[0].period).to eq(Date.today.beginning_of_month.to_time.utc)
+            end
           end
 
-          it "queries today's counts from HourlyWorkflowUserClassificationCount relation if workflow_id present" do
-            params[:workflow_id] = diff_workflow_event.workflow_id.to_s
-            counts = count_user_classifications.call(params)
-            expect(counts.length).to eq(1)
-            expect(counts.first.count).to eq(1)
-            expect(counts.first).to be_an_instance_of UserClassificationCounts::HourlyUserWorkflowClassificationCount
-          end
+          describe 'adds or appends queries from hourly_relation' do
+            it "queries today's counts from HourlyUserClassificationCount relation if no workflow_id or project_id present" do
+              params[:period] = 'day'
+              counts = count_user_classifications.call(params)
+              expect(counts.last).to be_an_instance_of UserClassificationCounts::HourlyUserClassificationCount
+            end
 
-          it "queries today's counts from HourlyProjectUserClassificationCount relation if project_id present" do
-            params[:project_id] = diff_project_event.project_id.to_s
-            counts = count_user_classifications.call(params)
-            expect(counts.length).to eq(1)
-            expect(counts.first.count).to eq(1)
-            expect(counts.first).to be_an_instance_of UserClassificationCounts::HourlyUserProjectClassificationCount
-          end
+            it "queries today's counts from HourlyWorkflowUserClassificationCount relation if workflow_id present" do
+              params[:workflow_id] = diff_workflow_event.workflow_id.to_s
+              counts = count_user_classifications.call(params)
+              expect(counts.length).to eq(1)
+              expect(counts.first.count).to eq(1)
+              expect(counts.first).to be_an_instance_of UserClassificationCounts::HourlyUserWorkflowClassificationCount
+            end
 
-          it "queries today's counts from HourlyProjectUserClassificationCount relation if project_contributions is true" do
-            params[:project_contributions] = true
-            counts = count_user_classifications.call(params)
-            expect(counts.last).to be_an_instance_of UserClassificationCounts::HourlyUserProjectClassificationCount
+            it "queries today's counts from HourlyProjectUserClassificationCount relation if project_id present" do
+              params[:project_id] = diff_project_event.project_id.to_s
+              counts = count_user_classifications.call(params)
+              expect(counts.length).to eq(1)
+              expect(counts.first.count).to eq(1)
+              expect(counts.first).to be_an_instance_of UserClassificationCounts::HourlyUserProjectClassificationCount
+            end
+
+            it "queries today's counts from HourlyProjectUserClassificationCount relation if project_contributions is true" do
+              params[:project_contributions] = true
+              counts = count_user_classifications.call(params)
+              expect(counts.last).to be_an_instance_of UserClassificationCounts::HourlyUserProjectClassificationCount
+            end
           end
         end
       end
