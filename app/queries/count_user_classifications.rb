@@ -40,7 +40,6 @@ class CountUserClassifications
   def include_today_to_scoped(scoped_upto_yesterday, params)
     period = (params[:period] || 'year').downcase
     todays_classifications = current_date_classifications(params)
-
     return scoped_upto_yesterday if todays_classifications.blank?
 
     if scoped_upto_yesterday.blank?
@@ -50,7 +49,7 @@ class CountUserClassifications
       return todays_classifications
     end
 
-    most_recent_date_from_scoped = scoped_upto_yesterday[-1].period.to_date
+    most_recent_date_from_scoped = scoped_upto_yesterday.last.period.to_date
 
     if today_part_of_recent_period?(most_recent_date_from_scoped, period)
       add_todays_counts_to_recent_period_counts(scoped_upto_yesterday, todays_classifications, params)
@@ -67,7 +66,7 @@ class CountUserClassifications
     todays_count,
     params
   )
-    return add_project_contribution_counts(count_records_up_to_yesterday, todays_count, params[:time_spent]) if params[:project_contributions]
+    return add_project_contribution_counts(count_records_up_to_yesterday, todays_count, params) if params[:project_contributions]
 
     current_period_counts =
       count_records_up_to_yesterday.last.count + todays_count[0].count
@@ -79,8 +78,10 @@ class CountUserClassifications
     count_records_up_to_yesterday
   end
 
-  def add_project_contribution_counts(scoped, todays_counts, time_spent)
+  def add_project_contribution_counts(scoped, todays_counts, params)
     scoped = scoped.to_a
+    time_spent = params[:time_spent]
+    period = (params[:period] || 'year').downcase
     classifications_by_project = scoped.index_by(&:project_id)
     todays_counts.each do |today_count|
       existing_count = classifications_by_project[today_count.project_id]
@@ -88,6 +89,7 @@ class CountUserClassifications
         existing_count.count += today_count.count
         existing_count.session_time += today_count.session_time if time_spent
       else
+        today_count.period = start_of_current_period(period).to_time.utc
         scoped = scoped << today_count
       end
     end
