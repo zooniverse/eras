@@ -66,9 +66,6 @@ RSpec.describe CountUserClassifications do
       params[:id] = classification_event.user_id.to_s
     end
 
-    it_behaves_like 'is filterable by workflow'
-    it_behaves_like 'is filterable by project'
-
     it 'filters by given user_id' do
       counts = count_user_classifications.call(params)
       expect(counts.to_sql).to include(".\"user_id\" = #{classification_event.user_id}")
@@ -122,6 +119,14 @@ RSpec.describe CountUserClassifications do
 
     context 'querying using hierarchal continuous aggregates' do
       context 'when end_date EXCLUDES today' do
+        context 'when applying filters' do
+          before(:each) do
+            params[:end_date] = Date.yesterday.to_s
+          end
+          it_behaves_like 'is filterable by workflow'
+          it_behaves_like 'is filterable by project'
+        end
+
         it 'returns counts of events within given date range' do
           last_week = Date.today - 7
           yesterday = Date.today - 1
@@ -135,7 +140,17 @@ RSpec.describe CountUserClassifications do
       
       context 'when end_date includes today' do
         context 'when there are no counts for today' do
-          
+          let!(:diff_time_event_of_other_user) { create(:classification_created_yesterday, user_id: 3, classification_id: 8) }
+          before(:each) do
+            params[:id] = diff_time_event_of_other_user.user_id.to_s
+          end
+
+          it 'returns counts queried from DailyUserClassificationCount relation for classifications upto and including yesterday' do
+            counts = count_user_classifications.call(params)
+            expect(counts.length).to eq(1)
+            expect(counts[0].count).to eq(1)
+            expect(counts.model).to be UserClassificationCounts::DailyUserClassificationCount
+          end
         end
 
         context 'when there are counts for today' do
@@ -145,7 +160,6 @@ RSpec.describe CountUserClassifications do
             params[:end_date] = Date.today.to_s
             params[:period] = 'day'
             counts = count_user_classifications.call(params)
-            # Expect counts to look something like in order
             # [<UserClassificationCounts::DailyUserClassificationCount period: yesterday's date, count: 1>, <UserClassificationCounts::HourlyUserClassificationCount period: today's date, count: 3>]
             # Classifications created yesterday is just diff_time_event, 
             # and classifications created today are : classification_event, diff_workflow_event, and diff_project_event
