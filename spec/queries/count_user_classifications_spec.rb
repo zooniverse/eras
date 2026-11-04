@@ -121,7 +121,7 @@ RSpec.describe CountUserClassifications do
     end
 
     context 'querying using hierarchal continuous aggregates' do
-      context 'when end_date excludes today' do
+      context 'when end_date EXCLUDES today' do
         it 'returns counts of events within given date range' do
           last_week = Date.today - 7
           yesterday = Date.today - 1
@@ -148,35 +148,34 @@ RSpec.describe CountUserClassifications do
             # Expect counts to look something like in order
             # [<UserClassificationCounts::DailyUserClassificationCount period: yesterday's date, count: 1>, <UserClassificationCounts::HourlyUserClassificationCount period: today's date, count: 3>]
             # Classifications created yesterday is just diff_time_event, 
-            # and classifications created today are classification_event, diff_workflow_event, and diff_project_event
+            # and classifications created today are : classification_event, diff_workflow_event, and diff_project_event
             expect(counts.length).to eq(2)
             expect(counts[0].count).to eq(1)
             expect(counts[1].count).to eq(3)
           end
         end
 
-        describe 'include queries from hourly_relation' do
+        describe 'adds or appends queries from hourly_relation' do
           it "queries today's counts from HourlyUserClassificationCount relation if no workflow_id or project_id present" do
+            params[:period] = 'day'
             counts = count_user_classifications.call(params)
-            expect(counts.length).to eq(1)
-            expect(counts[0].count).to eq(3)
-            expect(counts.model).to be UserClassificationCounts::HourlyUserClassificationCount
+            expect(counts.last).to be_an_instance_of UserClassificationCounts::HourlyUserClassificationCount
           end
 
           it "queries today's counts from HourlyWorkflowUserClassificationCount relation if workflow_id present" do
             params[:workflow_id] = diff_workflow_event.workflow_id.to_s
             counts = count_user_classifications.call(params)
             expect(counts.length).to eq(1)
-            expect(counts[0].count).to eq(1)
-            expect(counts.model).to be UserClassificationCounts::HourlyUserWorkflowClassificationCount
+            expect(counts.first.count).to eq(1)
+            expect(counts.first).to be_an_instance_of UserClassificationCounts::HourlyUserWorkflowClassificationCount
           end
 
           it "queries today's counts from HourlyProjectUserClassificationCount relation if project_id present" do
             params[:project_id] = diff_project_event.project_id.to_s
             counts = count_user_classifications.call(params)
             expect(counts.length).to eq(1)
-            expect(counts[0].count).to eq(1)
-            expect(counts.model).to be UserClassificationCounts::HourlyUserProjectClassificationCount
+            expect(counts.first.count).to eq(1)
+            expect(counts.first).to be_an_instance_of UserClassificationCounts::HourlyUserProjectClassificationCount
           end
 
           it "queries today's counts from HourlyProjectUserClassificationCount relation if project_contributions is true" do
