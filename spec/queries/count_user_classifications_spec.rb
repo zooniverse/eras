@@ -56,14 +56,20 @@ RSpec.describe CountUserClassifications do
   end
 
   describe '#call' do
-    let!(:classification_event) { create(:classification_event) }
-    let!(:diff_workflow_event) { create(:classification_with_diff_workflow) }
-    let!(:diff_project_event) { create(:classification_with_diff_project) }
-    let!(:diff_time_event) { create(:classification_created_yesterday) }
-    let!(:diff_user_classification) { create(:classification_with_diff_user) }
+    let(:today) { Date.new(2026, 11, 3)}
+    let!(:classification_event) { create(:classification_event, event_time: today) }
+    let!(:diff_workflow_event) { create(:classification_with_diff_workflow, event_time: today) }
+    let!(:diff_project_event) { create(:classification_with_diff_project, event_time: today) }
+    let!(:diff_time_event) { create(:classification_created_yesterday, event_time: today - 1) }
+    let!(:diff_user_classification) { create(:classification_with_diff_user, event_time: today) }
 
     before(:each) do
       params[:id] = classification_event.user_id.to_s
+      travel_to(today)
+    end
+
+    after do
+      travel_back
     end
 
     it 'filters by given user_id' do
@@ -75,7 +81,7 @@ RSpec.describe CountUserClassifications do
       counts = count_user_classifications.call(params)
       # because default is bucket by year and all data created in the same year, we expect counts to look something like
       # [<UserClassificationCounts::DailyUserClassificationCount period: 01-01-2023, count: 4>]
-      current_year = Date.today.year
+      current_year = today.year
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(4)
       expect(counts[0].period).to eq("01-01-#{current_year}")
@@ -121,15 +127,15 @@ RSpec.describe CountUserClassifications do
       context 'when end_date EXCLUDES today' do
         context 'when applying filters' do
           before(:each) do
-            params[:end_date] = Date.yesterday.to_s
+            params[:end_date] = (today - 1).to_s
           end
           it_behaves_like 'is filterable by workflow'
           it_behaves_like 'is filterable by project'
         end
 
         it 'returns counts of events within given date range' do
-          last_week = Date.today - 7
-          yesterday = Date.today - 1
+          last_week = today - 7
+          yesterday = today - 1
           params[:start_date] = last_week.to_s
           params[:end_date] = yesterday.to_s
           counts = count_user_classifications.call(params)
@@ -140,7 +146,7 @@ RSpec.describe CountUserClassifications do
 
       context 'when end_date includes today' do
         context 'when there are no counts for today' do
-          let!(:diff_time_event_of_other_user) { create(:classification_created_yesterday, user_id: 3, classification_id: 8) }
+          let!(:diff_time_event_of_other_user) { create(:classification_event, user_id: 3, classification_id: 8, event_time: today - 1) }
           before(:each) do
             params[:id] = diff_time_event_of_other_user.user_id.to_s
           end
@@ -168,7 +174,7 @@ RSpec.describe CountUserClassifications do
             expect(counts[1].count).to eq(3)
           end
 
-          context 'when there are only counts for today' do
+          context 'when there are no counts for previous days ONLY today' do
             it 'returns counts queried from HourlyUserClassificationCount relation for classifications of today with correct period' do
               params[:period] = 'month'
               params[:id] = diff_user_classification.user_id.to_s
@@ -179,7 +185,7 @@ RSpec.describe CountUserClassifications do
             end
           end
 
-          describe 'adds or appends queries from hourly_relation' do
+          describe '#hourly_relation' do
             it "queries today's counts from HourlyUserClassificationCount relation if no workflow_id or project_id present" do
               params[:period] = 'day'
               counts = count_user_classifications.call(params)
@@ -207,6 +213,56 @@ RSpec.describe CountUserClassifications do
               counts = count_user_classifications.call(params)
               expect(counts.last).to be_an_instance_of UserClassificationCounts::HourlyUserProjectClassificationCount
             end
+          end
+
+          context 'when today is part of the most recent period' do
+            let!(:previous_month_event_of_other_user) { create(:classification_with_diff_user, event_time: 1.month.ago, classification_id: 9) }
+
+            it 'adds todays counts to the most recent period counts' do
+              counts = count_user_classifications.call(params)
+              expect(counts.length).to eq(1)
+              expect(counts[0].count).to eq(4)
+              expect(counts[0].period).to eq(Date.today.beginning_of_year.to_time.utc)
+            end
+
+            it 'adds todays counts to the most recent period counts if workflow_id is present' do
+              params[:workflow_id] = classification_event.workflow_id.to_s
+              counts = count_user_classifications.call(params)
+              expect(counts.length).to eq(1)
+              expect(counts[0].count).to eq(3)
+              expect(counts[0].period).to eq(Date.today.beginning_of_year.to_time.utc)
+            end
+
+            it 'adds todays counts to the most recent period counts if project_id is present' do
+              params[:project_id] = classification_event.project_id.to_s
+              counts = count_user_classifications.call(params)
+              expect(counts.length).to eq(1)
+              expect(counts[0].count).to eq(3)
+              expect(counts[0].period).to eq(Date.today.beginning_of_year.to_time.utc)
+            end
+
+            it 'adds session_time to the most recent period counts if time_spent is true' do
+              params[:time_spent] = true
+              counts = count_user_classifications.call(params)
+              expect(counts.length).to eq(1)
+              expect(counts[0].count).to eq(4)
+              classification_event.session_time
+              diff_workflow_event.session_time
+              diff_project_event.session_time
+              expect(counts[0].session_time).to eq(24)
+              expect(counts[0].period).to eq(Date.today.beginning_of_year.to_time.utc)
+            end
+
+            it 'adds todays counts to the most recent period counts if project_contributions is true' do
+              params[:project_contributions] = true
+              counts = count_user_classifications.call(params)
+              expect(counts.length).to eq(1)
+              expect(counts[0].count).to eq(3)
+              expect(counts[0].period).to eq(Date.today.beginning_of_year.to_time.utc)
+            end
+          end
+
+          context 'when today is NOT part of the most recent period' do
           end
         end
       end
