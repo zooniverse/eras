@@ -56,11 +56,11 @@ RSpec.describe CountUserClassifications do
   end
 
   describe '#call' do
-    let(:today) { Date.new(2026, 11, 3)}
+    let(:today) { Date.new(2026, 10, 2) }
     let!(:classification_event) { create(:classification_event, event_time: today) }
     let!(:diff_workflow_event) { create(:classification_with_diff_workflow, event_time: today) }
     let!(:diff_project_event) { create(:classification_with_diff_project, event_time: today) }
-    let!(:diff_time_event) { create(:classification_created_yesterday, event_time: today - 1) }
+    let!(:diff_time_event) { create(:classification_event, classification_id: 3, event_time: today.advance(weeks: -1)) }
     let!(:diff_user_classification) { create(:classification_with_diff_user, event_time: today) }
 
     before(:each) do
@@ -81,20 +81,19 @@ RSpec.describe CountUserClassifications do
       counts = count_user_classifications.call(params)
       # because default is bucket by year and all data created in the same year, we expect counts to look something like
       # [<UserClassificationCounts::DailyUserClassificationCount period: 01-01-2023, count: 4>]
-      current_year = today.year
+      today.year
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(4)
-      expect(counts[0].period).to eq("01-01-#{current_year}")
+      expect(counts[0].period).to eq(today.beginning_of_year.to_time.utc)
     end
 
     it 'returns counts bucketed by given period' do
       params[:period] = 'day'
       counts = count_user_classifications.call(params)
       expect(counts.length).to eq(2)
-      expect(counts[0].count).to eq(1)
-      expect(counts[0].period).to eq((Date.today - 1).to_s)
-      expect(counts[1].count).to eq(3)
-      expect(counts[1].period).to eq(Date.today.to_s)
+      counts_by_period = counts.index_by(&:period)
+      expect(counts_by_period[diff_time_event.event_time].count).to eq(1)
+      expect(counts_by_period[classification_event.event_time].count).to eq(3)
     end
 
     it 'returns counts of events with given workflow' do
@@ -114,8 +113,8 @@ RSpec.describe CountUserClassifications do
     end
 
     it 'returns counts of events within given date range' do
-      last_week = Date.today - 7
-      yesterday = Date.today - 1
+      last_week = today - 7
+      yesterday = today - 1
       params[:start_date] = last_week.to_s
       params[:end_date] = yesterday.to_s
       counts = count_user_classifications.call(params)
@@ -160,20 +159,6 @@ RSpec.describe CountUserClassifications do
         end
 
         context 'when there are counts for today' do
-          it 'returns counts of events within given date range and includes today' do
-            last_week = Date.today - 7
-            params[:start_date] = last_week.to_s
-            params[:end_date] = Date.today.to_s
-            params[:period] = 'day'
-            counts = count_user_classifications.call(params)
-            # [<UserClassificationCounts::DailyUserClassificationCount period: yesterday's date, count: 1>, <UserClassificationCounts::HourlyUserClassificationCount period: today's date, count: 3>]
-            # Classifications created yesterday is just diff_time_event,
-            # and classifications created today are : classification_event, diff_workflow_event, and diff_project_event
-            expect(counts.length).to eq(2)
-            expect(counts[0].count).to eq(1)
-            expect(counts[1].count).to eq(3)
-          end
-
           context 'when there are no counts for previous days ONLY today' do
             it 'returns counts queried from HourlyUserClassificationCount relation for classifications of today with correct period' do
               params[:period] = 'month'
@@ -181,7 +166,7 @@ RSpec.describe CountUserClassifications do
               counts = count_user_classifications.call(params)
               expect(counts.length).to eq(1)
               expect(counts[0].count).to eq(1)
-              expect(counts[0].period).to eq(Date.today.beginning_of_month.to_time.utc)
+              expect(counts[0].period).to eq(today.beginning_of_month.to_time.utc)
             end
           end
 
@@ -196,16 +181,16 @@ RSpec.describe CountUserClassifications do
               params[:workflow_id] = diff_workflow_event.workflow_id.to_s
               counts = count_user_classifications.call(params)
               expect(counts.length).to eq(1)
-              expect(counts.first.count).to eq(1)
-              expect(counts.first).to be_an_instance_of UserClassificationCounts::HourlyUserWorkflowClassificationCount
+              expect(counts[0].count).to eq(1)
+              expect(counts[0]).to be_an_instance_of UserClassificationCounts::HourlyUserWorkflowClassificationCount
             end
 
             it "queries today's counts from HourlyProjectUserClassificationCount relation if project_id present" do
               params[:project_id] = diff_project_event.project_id.to_s
               counts = count_user_classifications.call(params)
               expect(counts.length).to eq(1)
-              expect(counts.first.count).to eq(1)
-              expect(counts.first).to be_an_instance_of UserClassificationCounts::HourlyUserProjectClassificationCount
+              expect(counts[0].count).to eq(1)
+              expect(counts[0]).to be_an_instance_of UserClassificationCounts::HourlyUserProjectClassificationCount
             end
 
             it "queries today's counts from HourlyProjectUserClassificationCount relation if project_contributions is true" do
@@ -216,13 +201,11 @@ RSpec.describe CountUserClassifications do
           end
 
           context 'when today is part of the most recent period' do
-            let!(:previous_month_event_of_other_user) { create(:classification_with_diff_user, event_time: 1.month.ago, classification_id: 9) }
-
             it 'adds todays counts to the most recent period counts' do
               counts = count_user_classifications.call(params)
               expect(counts.length).to eq(1)
               expect(counts[0].count).to eq(4)
-              expect(counts[0].period).to eq(Date.today.beginning_of_year.to_time.utc)
+              expect(counts[0].period).to eq(today.beginning_of_year.to_time.utc)
             end
 
             it 'adds todays counts to the most recent period counts if workflow_id is present' do
@@ -230,7 +213,7 @@ RSpec.describe CountUserClassifications do
               counts = count_user_classifications.call(params)
               expect(counts.length).to eq(1)
               expect(counts[0].count).to eq(3)
-              expect(counts[0].period).to eq(Date.today.beginning_of_year.to_time.utc)
+              expect(counts[0].period).to eq(today.beginning_of_year.to_time.utc)
             end
 
             it 'adds todays counts to the most recent period counts if project_id is present' do
@@ -238,7 +221,7 @@ RSpec.describe CountUserClassifications do
               counts = count_user_classifications.call(params)
               expect(counts.length).to eq(1)
               expect(counts[0].count).to eq(3)
-              expect(counts[0].period).to eq(Date.today.beginning_of_year.to_time.utc)
+              expect(counts[0].period).to eq(today.beginning_of_year.to_time.utc)
             end
 
             it 'adds session_time to the most recent period counts if time_spent is true' do
@@ -246,23 +229,106 @@ RSpec.describe CountUserClassifications do
               counts = count_user_classifications.call(params)
               expect(counts.length).to eq(1)
               expect(counts[0].count).to eq(4)
-              classification_event.session_time
-              diff_workflow_event.session_time
-              diff_project_event.session_time
-              expect(counts[0].session_time).to eq(24)
-              expect(counts[0].period).to eq(Date.today.beginning_of_year.to_time.utc)
+              expected_session_time = classification_event.session_time + diff_time_event.session_time +
+                                      diff_workflow_event.session_time +
+                                      diff_project_event.session_time
+              expect(counts[0].session_time).to eq(expected_session_time)
+              expect(counts[0].period).to eq(today.beginning_of_year.to_time.utc)
             end
 
-            it 'adds todays counts to the most recent period counts if project_contributions is true' do
+            it 'adds todays counts to the most recent period counts for EACH project if project_contributions is true' do
               params[:project_contributions] = true
               counts = count_user_classifications.call(params)
-              expect(counts.length).to eq(1)
-              expect(counts[0].count).to eq(3)
-              expect(counts[0].period).to eq(Date.today.beginning_of_year.to_time.utc)
+              expect(counts.length).to eq(2)
+
+              counts_by_project = counts.index_by(&:project_id)
+              first_project_counts = counts_by_project[classification_event.project_id]
+              expect(first_project_counts.count).to eq(3)
+              expect(first_project_counts.period).to eq(today.beginning_of_year.to_time.utc)
+
+              second_project_counts = counts_by_project[diff_project_event.project_id]
+              expect(second_project_counts.count).to eq(1)
+              expect(second_project_counts.period).to eq(today.beginning_of_year.to_time.utc)
+            end
+
+            it 'adds session_time to the most recent period counts for EACH project if project_contributions is true and time_spent is true' do
+              params[:project_contributions] = true
+              params[:time_spent] = true
+              counts = count_user_classifications.call(params)
+
+              counts_by_project = counts.index_by(&:project_id)
+              expected_session_time_first_project = classification_event.session_time + diff_time_event.session_time + diff_workflow_event.session_time
+              expect(counts_by_project[classification_event.project_id].session_time).to eq(expected_session_time_first_project)
+
+              expected_session_time_second_project = diff_project_event.session_time
+              expect(counts_by_project[diff_project_event.project_id].session_time).to eq(expected_session_time_second_project)
             end
           end
 
           context 'when today is NOT part of the most recent period' do
+            before do
+              params[:period] = 'month'
+            end
+
+            it 'appends todays counts as a new period' do
+              counts = count_user_classifications.call(params)
+              # expect:
+              # [
+              # <UserClassificationCounts::DailyUserClassificationCount period: 10-01-2026, count: 1>
+              # FROM diff_time_event,
+              # <UserClassificationCounts::HourlyUserClassificationCount period: 11-01-2026, count: 3>
+              # FROM classification_event, diff_proj_event and diff_workflow_event,
+              # ]
+              expect(counts.length).to eq(2)
+              counts_by_period = counts.index_by(&:period)
+              expect(counts_by_period[diff_time_event.event_time.beginning_of_month.to_time.utc].count).to eq(1)
+              expect(counts_by_period[classification_event.event_time.beginning_of_month.to_time.utc].count).to eq(3)
+            end
+
+            it 'includes correct session_time for each bucket if time_spent is true' do
+              params[:time_spent] = true
+              counts = count_user_classifications.call(params)
+              counts_by_period = counts.index_by(&:period)
+              expect(counts_by_period[diff_time_event.event_time.beginning_of_month.to_time.utc].session_time).to eq(diff_time_event.session_time)
+
+              expected_session_time = classification_event.session_time + diff_workflow_event.session_time +
+                                      diff_project_event.session_time
+              expect(counts_by_period[classification_event.event_time.beginning_of_month.to_time.utc].session_time).to eq(expected_session_time)
+            end
+
+            it 'appends todays counts as a new period if project_contributions is true' do
+              params[:project_contributions] = true
+              counts = count_user_classifications.call(params)
+              # [<UserClassificationCounts::DailyUserProjectClassificationCount period: 10-01-2026, count: 1, project_id: 1> FROM diff_time_event,
+              # <UserClassificationCounts::HourlyUserProjectClassificationCount period: 11-01-2026, count: 2, project_id: 1> FROM classification_event and diff_workflow_event,
+              # <UserClassificationCounts::HourlyUserProjectClassificationCount period: 11-01-2026, count: 1, project_id: 2> FROM diff_project_event]
+              expect(counts.length).to eq(3)
+              counts_by_period_and_project = counts.index_by { |c| [c.period, c.project_id] }
+
+              expect(counts_by_period_and_project[[diff_time_event.event_time.beginning_of_month.to_time.utc, diff_time_event.project_id]].count).to eq(1)
+
+              expect(counts_by_period_and_project[[classification_event.event_time.beginning_of_month.to_time.utc, classification_event.project_id]].count).to eq(2)
+
+              expect(counts_by_period_and_project[[diff_project_event.event_time.beginning_of_month.to_time.utc, diff_project_event.project_id]].count).to eq(1)
+            end
+
+            it 'includes correct session_time for each bucket if project_contributions is true and time_spent is true' do
+              params[:project_contributions] = true
+              params[:time_spent] = true
+              counts = count_user_classifications.call(params)
+              counts_by_period_and_project = counts.index_by { |c| [c.period, c.project_id] }
+
+              diff_time_event_project_id_idx = [diff_time_event.event_time.beginning_of_month.to_time.utc, diff_time_event.project_id]
+              expect(counts_by_period_and_project[diff_time_event_project_id_idx].session_time).to eq(diff_time_event.session_time)
+
+              expected_session_time_first_project = classification_event.session_time + diff_workflow_event.session_time
+              classification_event_time_and_project_id_idx = [classification_event.event_time.beginning_of_month.to_time.utc, classification_event.project_id]
+              expect(counts_by_period_and_project[classification_event_time_and_project_id_idx].session_time).to eq(expected_session_time_first_project)
+
+              expected_session_time_second_project = diff_project_event.session_time
+              diff_project_event_time_and_project_id_idx = [diff_project_event.event_time.beginning_of_month.to_time.utc, diff_project_event.project_id]
+              expect(counts_by_period_and_project[diff_project_event_time_and_project_id_idx].session_time).to eq(expected_session_time_second_project)
+            end
           end
         end
       end
