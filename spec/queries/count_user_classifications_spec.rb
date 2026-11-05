@@ -81,7 +81,6 @@ RSpec.describe CountUserClassifications do
       counts = count_user_classifications.call(params)
       # because default is bucket by year and all data created in the same year, we expect counts to look something like
       # [<UserClassificationCounts::DailyUserClassificationCount period: 01-01-2023, count: 4>]
-      today.year
       expect(counts.length).to eq(1)
       expect(counts[0].count).to eq(4)
       expect(counts[0].period).to eq(today.beginning_of_year.to_time.utc)
