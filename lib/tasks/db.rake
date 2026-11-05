@@ -220,20 +220,21 @@ namespace :db do
       WITH (timescaledb.continuous) AS
       SELECT time_bucket('1 hour', event_time) AS hour,
           sum(session_time) as total_session_time,
+          user_id,
           count(*) as classification_count
       FROM classification_events
-      GROUP BY hour;
+      GROUP BY hour, user_id;
     SQL
 
     ActiveRecord::Base.connection.execute <<-SQL
       CREATE MATERIALIZED VIEW IF NOT EXISTS hourly_user_classification_count_and_time_per_project
       WITH (timescaledb.continuous) AS
       SELECT time_bucket('1 hour', event_time) AS hour,
-      project_id,
+      project_id, user_id,
           sum(session_time) as total_session_time,
           count(*) as classification_count
       FROM classification_events
-      GROUP BY hour, project_id;
+      GROUP BY hour, user_id, project_id;
     SQL
 
     ActiveRecord::Base.connection.execute <<-SQL
@@ -241,10 +242,11 @@ namespace :db do
       WITH (timescaledb.continuous) AS
       SELECT time_bucket('1 hour', event_time) AS hour,
       workflow_id,
+      user_id,
           sum(session_time) as total_session_time,
           count(*) as classification_count
       FROM classification_events
-      GROUP BY hour, workflow_id;
+      GROUP BY hour, user_id, workflow_id;
     SQL
   end
 

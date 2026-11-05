@@ -64,7 +64,7 @@ class UserClassificationCountsSerializer
         uccs.map(&:project_id)
       end
       recently_contributed_project_ids = period_to_contributed_project_ids.values.flatten.uniq
-      recently_contributed_project_ids.map { |project_id| { project_id: , count: project_contributions[project_id] } }
+      recently_contributed_project_ids.map { |project_id| { project_id:, count: project_contributions[project_id] } }
     else
       project_contributions.map { |project_id, count| { project_id:, count: } }.sort_by { |proj_contribution| proj_contribution[:count] }.reverse
     end
