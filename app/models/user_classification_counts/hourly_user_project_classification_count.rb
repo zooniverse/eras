@@ -8,7 +8,7 @@ module UserClassificationCounts
     attribute :total_session_time, :float
     attribute :user_id, :integer
     attribute :project_id, :integer
-    attribute :session_time, :integer
+    attribute :session_time, :float
     attribute :count, :integer
     attribute :period, :datetime
 
