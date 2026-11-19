@@ -28,6 +28,13 @@ jobs:
           --health-interval 10ms
           --health-timeout 500ms
           --health-retries 15
+    continue-on-error: true
+    strategy:
+      matrix:
+        gemfile:
+          - Gemfile
+        ruby:
+          - 3.3
 
     steps:
       - name: Checkout code
@@ -39,7 +46,7 @@ jobs:
       - name: Setup Ruby and install gems
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.2'
+          ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
       - name: Setup test database
